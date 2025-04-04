@@ -155,6 +155,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     connectionStatus,
     connected,
     connectToPeer,
-    sendData
+    sendData,
+    peer: peerRef.current
   };
 } 
