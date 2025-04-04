@@ -12,14 +12,17 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
   const [peerIdInput, setPeerIdInput] = useState('');
   const [copyBtnText, setCopyBtnText] = useState('复制');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   // 复制Peer ID到剪贴板
   const copyIdToClipboard = () => {
     navigator.clipboard.writeText(myPeerId)
       .then(() => {
         setCopyBtnText('已复制');
+        setIsCopied(true);
         setTimeout(() => {
           setCopyBtnText('复制');
+          setIsCopied(false);
         }, 2000);
       })
       .catch(err => {
@@ -46,12 +49,12 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
       const scanUrl = `${basePath}scan?connect=${myPeerId}`;
       
       // 设置canvas大小
-      qrcodeRef.current.width = 150;
-      qrcodeRef.current.height = 150;
+      qrcodeRef.current.width = 180;
+      qrcodeRef.current.height = 180;
       
       // 使用QRCode库生成二维码
       window.QRCode.toCanvas(qrcodeRef.current, scanUrl, {
-        width: 150,
+        width: 180,
         margin: 1,
         color: {
           dark: '#3498db',
@@ -79,37 +82,73 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
     }
   };
 
+  // 生成连接状态的类名
+  const getStatusClassName = () => {
+    if (connectionStatus.includes('已连接')) return 'status-connected';
+    if (connectionStatus.includes('错误') || connectionStatus.includes('失败')) return 'status-error';
+    if (connectionStatus.includes('正在连接')) return 'status-connecting';
+    return '';
+  };
+
   return (
     <div className="connection-panel">
       <div className="connection-info">
-        <h2>第一步：建立连接</h2>
-        <div className="id-section">
-          <p>我的ID: <span id="my-id">{myPeerId || "等待生成..."}</span> 
-            <button id="copy-id" className="btn-small" onClick={copyIdToClipboard}>{copyBtnText}</button>
-          </p>
+        <h2 className="connection-header">第一步：建立连接</h2>
+        <div className="connection-guide">
+          与另一台设备建立连接后，您将能够发送或接收文件和文本
         </div>
-        <div className="connect-section">
-          <input 
-            type="text" 
-            id="peer-id" 
-            placeholder="输入对方ID" 
-            value={peerIdInput}
-            onChange={(e) => setPeerIdInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <button id="connect-btn" className="btn" onClick={handleConnect}>连接</button>
-        </div>
-        <div id="qr-container">
-          <h3>或扫描二维码连接</h3>
-          <canvas id="qrcode" ref={qrcodeRef}></canvas>
-          <div id="share-url" className="share-url">
-            <small>或分享链接: <a href={`/scan?connect=${myPeerId}`} target="_blank">
-              {myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : '等待生成...'}
-            </a></small>
+        
+        <div className="connection-methods">
+          <div className="id-section">
+            <div className="section-label">方式一：使用ID连接</div>
+            <div className="my-id-container">
+              <div className="my-id-label">我的ID:</div>
+              <div className={`my-id-value ${isCopied ? 'copied' : ''}`}>
+                <span id="my-id">{myPeerId || "等待生成..."}</span>
+                <button 
+                  id="copy-id" 
+                  className={`btn-small ${isCopied ? 'copied' : ''}`} 
+                  onClick={copyIdToClipboard}
+                >
+                  {copyBtnText}
+                </button>
+              </div>
+            </div>
+            <div className="connect-section">
+              <input 
+                type="text" 
+                id="peer-id" 
+                placeholder="输入对方ID" 
+                value={peerIdInput}
+                onChange={(e) => setPeerIdInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <button id="connect-btn" className="btn" onClick={handleConnect}>连接</button>
+            </div>
+          </div>
+          
+          <div className="or-divider">
+            <span>或</span>
+          </div>
+          
+          <div className="qr-section">
+            <div className="section-label">方式二：扫描二维码连接</div>
+            <div id="qr-container">
+              <canvas id="qrcode" ref={qrcodeRef}></canvas>
+              <div id="share-url" className="share-url">
+                <small>分享链接: 
+                  <a href={`/scan?connect=${myPeerId}`} target="_blank" title={myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : ''}>
+                    {myPeerId ? '点击查看' : '等待生成...'}
+                  </a>
+                </small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div className="status">
+      
+      <div className={`status-indicator ${getStatusClassName()}`}>
+        <div className="status-icon"></div>
         <p>状态: <span id="connection-status">{connectionStatus}</span></p>
       </div>
     </div>
