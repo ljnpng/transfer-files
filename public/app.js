@@ -49,11 +49,19 @@ function initializePeer() {
 // 生成二维码
 function generateQRCode(peerId) {
     // 清除之前生成的二维码和URL
-    document.getElementById('qrcode').innerHTML = '';
+    const qrcodeElement = document.getElementById('qrcode');
+    // 清空内容
+    const context = qrcodeElement.getContext('2d');
+    context.clearRect(0, 0, qrcodeElement.width, qrcodeElement.height);
+    
     const shareUrlElement = document.getElementById('share-url');
     if (shareUrlElement) {
         shareUrlElement.remove();
     }
+    
+    // 添加调试代码
+    console.log('QR Code element:', qrcodeElement);
+    console.log('QR Code element type:', qrcodeElement.tagName);
     
     // 获取当前URL的基础部分（不包含查询参数）
     const baseUrl = window.location.origin + window.location.pathname;
@@ -62,17 +70,37 @@ function generateQRCode(peerId) {
     // 创建指向扫描页面的URL，而不是直接连接
     const scanUrl = `${basePath}scan.html?connect=${peerId}`;
     
-    // 生成包含扫描URL的二维码
-    QRCode.toCanvas(document.getElementById('qrcode'), scanUrl, {
-        width: 150,
-        margin: 1,
-        color: {
-            dark: '#3498db',
-            light: '#ffffff'
-        }
-    }, function (error) {
-        if (error) console.error(error);
-    });
+    try {
+        // 设置canvas大小
+        qrcodeElement.width = 150;
+        qrcodeElement.height = 150;
+        
+        // 现在使用toCanvas，因为元素已经是canvas
+        QRCode.toCanvas(qrcodeElement, scanUrl, {
+            width: 150,
+            margin: 1,
+            color: {
+                dark: '#3498db',
+                light: '#ffffff'
+            }
+        }, function (error) {
+            if (error) {
+                console.error('QR Code 生成错误:', error);
+                // 显示错误信息
+                const p = document.createElement('p');
+                p.style.color = 'red';
+                p.textContent = '二维码生成失败，请使用链接方式';
+                qrcodeElement.parentNode.insertBefore(p, qrcodeElement.nextSibling);
+            }
+        });
+    } catch (e) {
+        console.error('QR Code 生成异常:', e);
+        // 退化处理：只显示链接
+        const p = document.createElement('p');
+        p.style.color = 'red';
+        p.textContent = '二维码生成失败，请使用链接方式';
+        qrcodeElement.parentNode.insertBefore(p, qrcodeElement.nextSibling);
+    }
     
     // 显示连接URL
     const newShareUrlElement = document.createElement('div');

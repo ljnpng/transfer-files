@@ -24,7 +24,7 @@
                 </div>
                 <div id="qr-container">
                     <h3>扫描二维码连接</h3>
-                    <div id="qrcode"></div>
+                    <canvas id="qrcode"></canvas>
                 </div>
             </div>
             <div class="status">
@@ -63,6 +63,12 @@
 
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script>
+        // 确保QRCode库已加载
+        window.onload = function() {
+            console.log('QRCode库状态:', typeof QRCode);
+        }
+    </script>
     <script src="app.js"></script>
 </body>
 </html> 
