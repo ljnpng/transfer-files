@@ -222,16 +222,48 @@ function receiveData(data) {
         // 格式化文件大小
         const fileSize = formatFileSize(data.size);
         
-        fileElement.innerHTML = `
-            <div class="file-info">
-                <span class="file-icon">📄</span>
-                <span class="file-name">${data.name}</span>
-                <span class="file-size">${fileSize}</span>
-            </div>
-            <a href="${url}" download="${data.name}" class="btn-small">下载</a>
-        `;
+        // 检查是否为图片类型
+        const isImage = data.dataType.startsWith('image/');
+        
+        if (isImage) {
+            // 图片文件显示预览
+            fileElement.innerHTML = `
+                <div class="file-info">
+                    <span class="file-icon">🖼️</span>
+                    <span class="file-name">${data.name}</span>
+                    <span class="file-size">${fileSize}</span>
+                </div>
+                <div class="image-preview">
+                    <img src="${url}" alt="${data.name}" style="max-width: 200px; max-height: 200px; margin: 10px 0;">
+                </div>
+                <div class="file-actions">
+                    <a href="${url}" download="${data.name}" class="btn-small">下载</a>
+                    <button class="btn-small copy-image" data-url="${url}">复制图片</button>
+                </div>
+            `;
+        } else {
+            // 其他类型文件
+            fileElement.innerHTML = `
+                <div class="file-info">
+                    <span class="file-icon">📄</span>
+                    <span class="file-name">${data.name}</span>
+                    <span class="file-size">${fileSize}</span>
+                </div>
+                <a href="${url}" download="${data.name}" class="btn-small">下载</a>
+            `;
+        }
         
         receivedFiles.appendChild(fileElement);
+        
+        // 如果是图片，添加复制事件
+        if (isImage) {
+            const copyButton = fileElement.querySelector('.copy-image');
+            if (copyButton) {
+                copyButton.addEventListener('click', function() {
+                    copyImageToClipboard(this.getAttribute('data-url'), data.name);
+                });
+            }
+        }
     } else if (data.type === 'text') {
         // 接收文本
         const textElement = document.createElement('div');
@@ -247,6 +279,80 @@ function receiveData(data) {
         
         receivedText.appendChild(textElement);
     }
+}
+
+// 复制图片到剪贴板
+async function copyImageToClipboard(url, fileName) {
+    try {
+        // 检查 Clipboard API 是否可用
+        if (!navigator.clipboard) {
+            console.error('浏览器不支持 Clipboard API');
+            showToast('您的浏览器不支持复制功能，请手动下载图片', true);
+            return;
+        }
+
+        const response = await fetch(url);
+        const blob = await response.blob();
+        
+        try {
+            // 检查 ClipboardItem 是否可用
+            if (typeof ClipboardItem === 'undefined') {
+                throw new Error('ClipboardItem 不受支持');
+            }
+
+            // 尝试使用新的 Clipboard API
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    [blob.type]: blob
+                })
+            ]);
+            showToast(`已复制图片 ${fileName}`);
+        } catch (err) {
+            console.error('复制到剪贴板失败:', err);
+            
+            // 退化方案1：创建一个临时链接并打开图片
+            const tempLink = document.createElement('a');
+            tempLink.href = url;
+            tempLink.target = '_blank';
+            tempLink.click();
+            
+            showToast('无法直接复制图片，已在新窗口打开，请手动复制', true);
+        }
+    } catch (e) {
+        console.error('无法获取图片数据:', e);
+        showToast('复制失败，请手动下载图片', true);
+    }
+}
+
+// 显示提示消息
+function showToast(message, isError = false) {
+    // 检查是否已有toast元素，如果有则移除
+    const existingToast = document.getElementById('toast-message');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // 创建新的toast元素
+    const toast = document.createElement('div');
+    toast.id = 'toast-message';
+    toast.className = isError ? 'toast error' : 'toast';
+    toast.textContent = message;
+    
+    // 添加到body
+    document.body.appendChild(toast);
+    
+    // 显示动画
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    // 2秒后自动隐藏
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 2000);
 }
 
 // 处理文件选择

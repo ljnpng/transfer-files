@@ -290,4 +290,65 @@ h3 {
         flex-grow: 1;
         text-align: center;
     }
+}
+
+/* 图片预览样式 */
+.image-preview {
+    text-align: center;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.image-preview img {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 3px;
+}
+
+.file-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+/* Toast 消息样式 */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.error {
+    background-color: #e74c3c;
+}
+
+/* 确保按钮样式一致 */
+button.copy-image {
+    cursor: pointer;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+button.copy-image:hover {
+    background-color: #2980b9;
 } 
