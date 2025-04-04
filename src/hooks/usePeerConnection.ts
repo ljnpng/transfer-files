@@ -47,22 +47,61 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
 
     try {
       const Peer = window.Peer;
-      const peer = new Peer();
+      // 添加PeerJS配置，包含多个STUN/TURN服务器
+      const peer = new Peer({
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' },
+            { urls: 'stun:stun.stunprotocol.org:3478' }
+          ],
+          iceCandidatePoolSize: 10,
+        },
+        debug: 2 // 增加调试信息级别
+      });
       peerRef.current = peer;
 
       peer.on('open', (id: string) => {
         setMyPeerId(id);
         setConnectionStatus('在线，等待连接');
+        console.log('PeerJS连接已打开，ID:', id);
       });
 
       peer.on('connection', (conn: any) => {
+        console.log('收到连接请求:', conn.peer);
         setupConnection(conn);
         setConnectionStatus(`已连接到 ${conn.peer}`);
       });
 
       peer.on('error', (error: any) => {
         console.error('Peer连接错误:', error);
-        setConnectionStatus('连接错误');
+        let errorMsg = '连接错误';
+        
+        // 提供更具体的错误信息
+        if (error.type === 'peer-unavailable') {
+          errorMsg = '对方设备不可用';
+        } else if (error.type === 'network') {
+          errorMsg = '网络连接问题';
+        } else if (error.type === 'disconnected') {
+          errorMsg = '已从服务器断开';
+        } else if (error.type === 'server-error') {
+          errorMsg = '服务器错误';
+        }
+        
+        setConnectionStatus(errorMsg);
+      });
+
+      // 添加额外处理
+      peer.on('disconnected', () => {
+        console.log('与PeerJS服务器断开连接，尝试重连...');
+        setConnectionStatus('连接已断开，尝试重连...');
+        
+        // 尝试重新连接到服务器
+        peer.reconnect();
       });
 
       return () => {
@@ -96,17 +135,22 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
   const setupConnection = useCallback((conn: any) => {
     setConnection(conn);
     
+    console.log('设置连接:', conn.peer);
+    
     conn.on('open', () => {
+      console.log('连接已打开:', conn.peer);
       setConnectionStatus(`已连接到 ${conn.peer}`);
       setConnected(true);
       if (options.onConnection) options.onConnection(conn);
     });
     
     conn.on('data', (data: any) => {
+      console.log('收到数据类型:', data?.type);
       if (options.onData) options.onData(data);
     });
     
     conn.on('close', () => {
+      console.log('连接已关闭');
       setConnectionStatus('连接已关闭');
       setConnected(false);
       setConnection(null);
@@ -118,6 +162,14 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       setConnectionStatus('连接出错');
       if (options.onConnectionError) options.onConnectionError(error);
     });
+    
+    // 增加连接超时处理
+    setTimeout(() => {
+      if (conn.open === false) {
+        console.log('连接超时未建立');
+        setConnectionStatus('连接超时，请重试');
+      }
+    }, 20000); // 20秒超时
   }, [options]);
 
   // 发送数据
