@@ -18,6 +18,7 @@ body {
 
 .container {
   max-width: 800px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
   background-color: white;
@@ -271,8 +272,79 @@ h3 {
   100% { opacity: 0.5; }
 }
 
-/* 更新响应式设计 */
+/* 大屏幕设备的样式 */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1000px;
+  }
+  
+  .connection-methods {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+  }
+  
+  .id-section, .qr-section {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  .connection-panel {
+    padding: 25px;
+  }
+  
+  .received-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+  }
+  
+  .image-preview img {
+    max-width: 300px;
+    max-height: 300px;
+  }
+}
+
+/* 中等屏幕设备的样式 */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .container {
+    max-width: 90%;
+  }
+  
+  .connection-methods {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .id-section, .qr-section {
+    flex: 1;
+    min-width: 280px;
+  }
+  
+  .received-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+  }
+}
+
+/* 更新响应式设计 - 小屏幕设备 */
 @media (max-width: 768px) {
+  body {
+    padding: 0;
+  }
+  
+  .container {
+    max-height: 100vh;
+    min-height: 100vh;
+    padding: 15px;
+    margin: 0;
+    max-width: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
   .connection-methods {
     flex-direction: column;
   }
@@ -289,13 +361,66 @@ h3 {
   .id-section, 
   .qr-section {
     width: 100%;
+    margin-bottom: 15px;
   }
   
-  .container {
-    max-height: 95vh;
-    padding: 15px;
-    margin: 10px;
-    max-width: 100%;
+  .transfer-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .tab-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .tab-pane.active {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .drag-area {
+    flex: 1;
+    padding: 20px;
+    min-height: 120px;
+  }
+  
+  .drag-area .upload-icon {
+    font-size: 30px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
+  }
+  
+  .connect-section {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  .file-info {
+    font-size: 14px;
+  }
+  
+  .received-item {
+    margin-bottom: 15px;
+    padding: 10px;
+  }
+  
+  .file-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 
@@ -664,40 +789,6 @@ textarea {
   resize: vertical;
   margin-bottom: 10px;
   font-family: inherit;
-}
-
-/* 响应式设计补充 */
-@media (max-width: 768px) {
-  .connect-section {
-    flex-direction: column;
-  }
-  
-  .tab-btn {
-    flex-grow: 1;
-    text-align: center;
-  }
-  
-  .file-info {
-    font-size: 14px;
-  }
-  
-  .drag-area {
-    padding: 20px;
-    min-height: 120px;
-  }
-  
-  .drag-area .upload-icon {
-    font-size: 30px;
-  }
-  
-  .received-item {
-    padding: 10px;
-  }
-  
-  .file-actions {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
 }
 
 .connected-text {
