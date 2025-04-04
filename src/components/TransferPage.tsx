@@ -28,6 +28,7 @@ interface TransferPageProps {
   sendData: (data: any) => boolean;
   receivedFiles: ReceivedFile[];
   receivedTexts: ReceivedText[];
+  onDisconnect?: () => void;
 }
 
 export default function TransferPage({
@@ -35,12 +36,15 @@ export default function TransferPage({
   onReceivedData,
   sendData,
   receivedFiles,
-  receivedTexts
+  receivedTexts,
+  onDisconnect
 }: TransferPageProps) {
   // 状态管理
   const [activeTab, setActiveTab] = useState<'file' | 'text'>('file');
   const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([]);
   const [textInput, setTextInput] = useState('');
+  const [transferProgress, setTransferProgress] = useState<number>(0);
+  const [isTransferring, setIsTransferring] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragAreaRef = useRef<HTMLDivElement>(null);
   
@@ -65,6 +69,10 @@ export default function TransferPage({
   const sendFiles = async () => {
     if (selectedFiles.length === 0) return;
     
+    setIsTransferring(true);
+    const totalFiles = selectedFiles.length;
+    let completedFiles = 0;
+    
     for (const fileItem of selectedFiles) {
       try {
         const file = fileItem.file;
@@ -81,20 +89,26 @@ export default function TransferPage({
         
         // 发送文件数据
         if (sendData(fileData)) {
+          completedFiles++;
+          setTransferProgress((completedFiles / totalFiles) * 100);
           showToast(`正在发送: ${file.name}`);
         } else {
           showToast('发送失败，请检查连接', true);
+          setIsTransferring(false);
           return;
         }
       } catch (error) {
         console.error('读取文件失败:', error);
         showToast('文件发送失败', true);
+        setIsTransferring(false);
         return;
       }
     }
     
     // 清空文件列表
     setSelectedFiles([]);
+    setTransferProgress(0);
+    setIsTransferring(false);
     showToast('文件发送完成');
   };
   
@@ -237,10 +251,22 @@ export default function TransferPage({
     };
   }, []);
   
+  // 图片预览点击放大
+  const handleImageClick = (url: string) => {
+    window.open(url, '_blank');
+  };
+  
   return (
     <>
       <div className="status-bar">
-        <p>状态: <span>{connectionStatus}</span></p>
+        <p>状态: <span className={connectionStatus.includes('已连接') ? 'connected-text' : ''}>{connectionStatus}</span></p>
+        {onDisconnect && (
+          <div className="status-actions">
+            <button className="disconnect-btn" onClick={onDisconnect}>
+              <span>断开连接</span>
+            </button>
+          </div>
+        )}
       </div>
       
       <div className="transfer-container">
@@ -266,6 +292,7 @@ export default function TransferPage({
             <div className="drag-area" 
               ref={dragAreaRef}
             >
+              <span className="upload-icon">📤</span>
               <p>拖放文件到这里或</p>
               <label htmlFor="file-input" className="file-label">选择文件</label>
               <input 
@@ -282,7 +309,14 @@ export default function TransferPage({
               {selectedFiles.map((fileItem) => (
                 <div key={fileItem.id} className="file-item">
                   <div className="file-info">
-                    <span className="file-icon">📄</span>
+                    <span className="file-icon">
+                      {fileItem.file.type.startsWith('image/') ? '🖼️' : 
+                       fileItem.file.type.includes('pdf') ? '📑' :
+                       fileItem.file.type.includes('word') ? '📝' :
+                       fileItem.file.type.includes('excel') || fileItem.file.type.includes('sheet') ? '📊' :
+                       fileItem.file.type.includes('video') ? '🎬' :
+                       fileItem.file.type.includes('audio') ? '🎵' : '📄'}
+                    </span>
                     <span className="file-name">{fileItem.file.name}</span>
                     <span className="file-size">{formatFileSize(fileItem.file.size)}</span>
                   </div>
@@ -296,13 +330,19 @@ export default function TransferPage({
               ))}
             </div>
             
+            {isTransferring && (
+              <div className="transfer-progress">
+                <div className="progress-bar" style={{ width: `${transferProgress}%` }}></div>
+              </div>
+            )}
+            
             <button 
               id="send-files-btn" 
               className="btn" 
-              disabled={selectedFiles.length === 0}
+              disabled={selectedFiles.length === 0 || isTransferring}
               onClick={sendFiles}
             >
-              发送文件
+              {isTransferring ? '发送中...' : '发送文件'}
             </button>
           </div>
           
@@ -330,59 +370,80 @@ export default function TransferPage({
       <div className="received-panel">
         <h2>已接收内容</h2>
         <div id="received-files" className="received-items">
-          {receivedFiles.map((file) => {
-            const isImage = file.type.startsWith('image/');
-            
-            return (
-              <div key={file.id} className="received-item">
-                <div className="file-info">
-                  <span className="file-icon">{isImage ? '🖼️' : '📄'}</span>
-                  <span className="file-name">{file.name}</span>
-                  <span className="file-size">{formatFileSize(file.size)}</span>
-                </div>
-                
-                {isImage && (
-                  <div className="image-preview">
-                    <img 
-                      src={file.url} 
-                      alt={file.name} 
-                      style={{ maxWidth: '200px', maxHeight: '200px', margin: '10px 0' }}
-                    />
+          {receivedFiles.length > 0 ? (
+            receivedFiles.map((file) => {
+              const isImage = file.type.startsWith('image/');
+              
+              return (
+                <div key={file.id} className="received-item">
+                  <div className="file-info">
+                    <span className="file-icon">
+                      {file.type.startsWith('image/') ? '🖼️' : 
+                       file.type.includes('pdf') ? '📑' :
+                       file.type.includes('word') ? '📝' :
+                       file.type.includes('excel') || file.type.includes('sheet') ? '📊' :
+                       file.type.includes('video') ? '🎬' :
+                       file.type.includes('audio') ? '🎵' : '📄'}
+                    </span>
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-size">{formatFileSize(file.size)}</span>
                   </div>
-                )}
-                
-                <div className="file-actions">
-                  <a href={file.url} download={file.name} className="btn-small">下载</a>
+                  
                   {isImage && (
-                    <button 
-                      className="btn-small copy-image" 
-                      onClick={() => copyImageToClipboard(file.url, file.name)}
-                    >
-                      复制图片
-                    </button>
+                    <div className="image-preview" onClick={() => handleImageClick(file.url)}>
+                      <img 
+                        src={file.url} 
+                        alt={file.name} 
+                        style={{ maxWidth: '200px', maxHeight: '200px', margin: '10px 0' }}
+                      />
+                    </div>
                   )}
+                  
+                  <div className="file-actions">
+                    <a href={file.url} download={file.name} className="btn-small download">下载</a>
+                    {isImage && (
+                      <button 
+                        className="btn-small copy-image" 
+                        onClick={() => copyImageToClipboard(file.url, file.name)}
+                      >
+                        复制图片
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="empty-state">
+              <div className="icon">📥</div>
+              <p>还没有接收到任何文件</p>
+            </div>
+          )}
         </div>
         
         <div id="received-text" className="received-items">
-          {receivedTexts.map((text) => (
-            <div key={text.id} className="received-text">
-              <div className="text-content">{text.content}</div>
-              <div className="text-footer">
-                <small>{text.timestamp}</small>
-                <button 
-                  className="btn-small copy-text"
-                  onClick={() => copyTextToClipboard(text.content)}
-                  title="复制文本"
-                >
-                  复制
-                </button>
+          {receivedTexts.length > 0 ? (
+            receivedTexts.map((text) => (
+              <div key={text.id} className="received-item received-text">
+                <div className="text-content">{text.content}</div>
+                <div className="text-footer">
+                  <small>{new Date(text.timestamp).toLocaleString()}</small>
+                  <button 
+                    className="btn-small copy-text"
+                    onClick={() => copyTextToClipboard(text.content)}
+                    title="复制文本"
+                  >
+                    复制
+                  </button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="empty-state">
+              <div className="icon">💬</div>
+              <p>还没有接收到任何文本消息</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </>

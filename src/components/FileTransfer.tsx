@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import ConnectionPanel from './ConnectionPanel';
+import TransferPage from './TransferPage';
 import usePeerConnection from '@/hooks/usePeerConnection';
 import { formatFileSize, showToast } from '@/utils/helpers';
 
@@ -25,350 +26,159 @@ interface ReceivedText {
 }
 
 export default function FileTransfer() {
-  // 状态管理
-  const [activeTab, setActiveTab] = useState<'file' | 'text'>('file');
-  const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([]);
+  // 使用自定义钩子处理WebRTC连接
+  const {
+    peer,
+    connection,
+    connectionStatus,
+    connectToPeer,
+    myPeerId
+  } = usePeerConnection();
+  
+  // 本地状态
+  const [connectStep, setConnectStep] = useState<'connect' | 'transfer'>('connect');
   const [receivedFiles, setReceivedFiles] = useState<ReceivedFile[]>([]);
   const [receivedTexts, setReceivedTexts] = useState<ReceivedText[]>([]);
-  const [textInput, setTextInput] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const dragAreaRef = useRef<HTMLDivElement>(null);
   
-  // 使用自定义钩子处理PeerJS连接
-  const { myPeerId, connectionStatus, connection, connectToPeer, sendData } = usePeerConnection({
-    onData: handleReceivedData
-  });
+  // 建立连接
+  const handleConnect = (peerId: string) => {
+    if (!peerId.trim()) {
+      showToast('请输入有效的连接ID', true);
+      return;
+    }
+    
+    connectToPeer(peerId);
+  };
   
-  // 处理接收的数据
-  function handleReceivedData(data: any) {
+  // 处理接收到的数据
+  const handleReceivedData = (data: any) => {
+    if (!data) return;
+    
     if (data.type === 'file') {
-      // 接收文件
-      const blob = new Blob([data.data], { type: data.dataType });
-      const url = URL.createObjectURL(blob);
-      
-      setReceivedFiles(prev => [...prev, {
-        name: data.name,
-        size: data.size,
-        url,
-        type: data.dataType,
-        id: Date.now().toString()
-      }]);
-    } else if (data.type === 'text') {
-      // 接收文本
-      setReceivedTexts(prev => [...prev, {
-        content: data.content,
-        timestamp: new Date(data.timestamp).toLocaleString(),
-        id: Date.now().toString()
-      }]);
-    }
-  }
-  
-  // 初始化拖放文件功能
-  useEffect(() => {
-    if (!dragAreaRef.current) return;
-    
-    const dragArea = dragAreaRef.current;
-    
-    // 阻止默认拖放行为
-    const preventDefaults = (e: Event) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-    
-    // 高亮拖放区域
-    const highlight = () => {
-      dragArea.classList.add('highlight');
-    };
-    
-    // 取消高亮拖放区域
-    const unhighlight = () => {
-      dragArea.classList.remove('highlight');
-    };
-    
-    // 处理拖放文件
-    const handleDrop = (e: DragEvent) => {
-      const dt = e.dataTransfer;
-      if (dt && dt.files.length > 0) {
-        handleFileSelect(dt.files);
-      }
-    };
-    
-    // 添加事件监听器
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dragArea.addEventListener(eventName, preventDefaults as EventListener);
-    });
-    
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dragArea.addEventListener(eventName, highlight);
-    });
-    
-    ['dragleave', 'drop'].forEach(eventName => {
-      dragArea.addEventListener(eventName, unhighlight);
-    });
-    
-    dragArea.addEventListener('drop', handleDrop as EventListener);
-    
-    // 清理事件监听器
-    return () => {
-      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dragArea.removeEventListener(eventName, preventDefaults as EventListener);
-      });
-      
-      ['dragenter', 'dragover'].forEach(eventName => {
-        dragArea.removeEventListener(eventName, highlight);
-      });
-      
-      ['dragleave', 'drop'].forEach(eventName => {
-        dragArea.removeEventListener(eventName, unhighlight);
-      });
-      
-      dragArea.removeEventListener('drop', handleDrop as EventListener);
-    };
-  }, []);
-  
-  // 处理文件选择
-  const handleFileSelect = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    
-    const newFiles = Array.from(files).map(file => ({
-      file,
-      id: Date.now() + '-' + Math.random().toString(36).substr(2, 9)
-    }));
-    
-    setSelectedFiles(prev => [...prev, ...newFiles]);
-  };
-  
-  // 移除选中的文件
-  const removeFile = (id: string) => {
-    setSelectedFiles(prev => prev.filter(file => file.id !== id));
-  };
-  
-  // 发送文件
-  const sendFiles = async () => {
-    if (!connection || selectedFiles.length === 0) return;
-    
-    for (const fileItem of selectedFiles) {
+      // 处理接收到的文件
       try {
-        const file = fileItem.file;
-        const arrayBuffer = await file.arrayBuffer();
+        const { name, size, dataType, data: fileData } = data;
         
-        // 准备文件元数据
-        const fileData = {
-          type: 'file',
-          name: file.name,
-          size: file.size,
-          dataType: file.type || 'application/octet-stream',
-          data: arrayBuffer
-        };
+        // 创建Blob对象
+        const blob = new Blob([fileData], { type: dataType });
+        const url = URL.createObjectURL(blob);
         
-        // 发送文件数据
-        sendData(fileData);
-      } catch (error) {
-        console.error('读取文件失败:', error);
-        showToast('文件发送失败', true);
-      }
-    }
-    
-    // 清空文件列表
-    setSelectedFiles([]);
-    showToast('文件发送完成');
-  };
-  
-  // 发送文本
-  const sendText = () => {
-    if (!connection || !textInput.trim()) return;
-    
-    // 准备文本数据
-    const textData = {
-      type: 'text',
-      content: textInput.trim(),
-      timestamp: new Date().toISOString()
-    };
-    
-    // 发送文本数据
-    sendData(textData);
-    
-    // 清空输入框
-    setTextInput('');
-    showToast('文本发送成功');
-  };
-  
-  // 复制图片到剪贴板
-  const copyImageToClipboard = async (url: string, fileName: string) => {
-    try {
-      // 检查 Clipboard API 是否可用
-      if (!navigator.clipboard) {
-        console.error('浏览器不支持 Clipboard API');
-        showToast('您的浏览器不支持复制功能，请手动下载图片', true);
-        return;
-      }
-
-      const response = await fetch(url);
-      const blob = await response.blob();
-      
-      try {
-        // 检查 ClipboardItem 是否可用
-        if (typeof ClipboardItem === 'undefined') {
-          throw new Error('ClipboardItem 不受支持');
-        }
-
-        // 尝试使用新的 Clipboard API
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            [blob.type]: blob
-          })
+        // 添加到已接收文件列表
+        setReceivedFiles(prev => [
+          {
+            name,
+            size,
+            url,
+            type: dataType,
+            id: Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+          },
+          ...prev
         ]);
-        showToast(`已复制图片 ${fileName}`);
-      } catch (err) {
-        console.error('复制到剪贴板失败:', err);
         
-        // 退化方案：创建一个临时链接并打开图片
-        const tempLink = document.createElement('a');
-        tempLink.href = url;
-        tempLink.target = '_blank';
-        tempLink.click();
-        
-        showToast('无法直接复制图片，已在新窗口打开，请手动复制', true);
+        showToast(`已接收文件: ${name}`);
+      } catch (error) {
+        console.error('处理接收文件失败:', error);
+        showToast('文件接收失败', true);
       }
-    } catch (e) {
-      console.error('无法获取图片数据:', e);
-      showToast('复制失败，请手动下载图片', true);
+    } else if (data.type === 'text') {
+      // 处理接收到的文本
+      try {
+        const { content, timestamp } = data;
+        
+        // 添加到已接收文本列表
+        setReceivedTexts(prev => [
+          {
+            content,
+            timestamp,
+            id: Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+          },
+          ...prev
+        ]);
+        
+        showToast('已接收新消息');
+      } catch (error) {
+        console.error('处理接收文本失败:', error);
+        showToast('消息接收失败', true);
+      }
     }
   };
+  
+  // 发送数据
+  const sendData = (data: any): boolean => {
+    if (!connection || connection.open === false) {
+      showToast('未连接，无法发送数据', true);
+      return false;
+    }
+    
+    try {
+      connection.send(data);
+      return true;
+    } catch (error) {
+      console.error('发送数据失败:', error);
+      return false;
+    }
+  };
+  
+  // 断开连接
+  const handleDisconnect = () => {
+    // 关闭连接
+    if (connection) {
+      connection.close();
+    }
+    
+    if (peer) {
+      peer.disconnect();
+      peer.destroy();
+    }
+    
+    // 重置状态
+    setConnectStep('connect');
+    setReceivedFiles([]);
+    setReceivedTexts([]);
+    
+    // 显示通知
+    showToast('已断开连接');
+  };
+  
+  // 在连接状态变化时更新步骤
+  useEffect(() => {
+    if (connectionStatus.includes('已连接')) {
+      setConnectStep('transfer');
+    }
+  }, [connectionStatus]);
+  
+  // 在连接对象上添加数据处理
+  useEffect(() => {
+    if (!connection) return;
+    
+    // 处理接收到的数据
+    connection.on('data', handleReceivedData);
+    
+    return () => {
+      connection.off('data', handleReceivedData);
+    };
+  }, [connection]);
   
   return (
-    <>
-      <ConnectionPanel 
-        myPeerId={myPeerId} 
-        connectionStatus={connectionStatus} 
-        onConnect={connectToPeer} 
-      />
+    <div className="container">
+      <h1>设备间传输</h1>
       
-      <div className="tabs">
-        <button 
-          className={`tab-btn ${activeTab === 'file' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('file')}
-        >
-          文件
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'text' ? 'active' : ''}`}
-          onClick={() => setActiveTab('text')}
-        >
-          文本
-        </button>
-      </div>
-      
-      <div className="tab-content">
-        <div id="file" className={`tab-pane ${activeTab === 'file' ? 'active' : ''}`}>
-          <div className="drag-area" ref={dragAreaRef}>
-            <p>拖放文件到这里或</p>
-            <label htmlFor="file-input" className="file-label">选择文件</label>
-            <input 
-              type="file" 
-              id="file-input" 
-              multiple 
-              hidden 
-              ref={fileInputRef}
-              onChange={(e) => handleFileSelect(e.target.files)}
-            />
-          </div>
-          
-          <div id="file-list" className="file-list">
-            {selectedFiles.map((fileItem) => (
-              <div key={fileItem.id} className="file-item">
-                <div className="file-info">
-                  <span className="file-icon">📄</span>
-                  <span className="file-name">{fileItem.file.name}</span>
-                  <span className="file-size">{formatFileSize(fileItem.file.size)}</span>
-                </div>
-                <span 
-                  className="file-remove" 
-                  onClick={() => removeFile(fileItem.id)}
-                >
-                  ×
-                </span>
-              </div>
-            ))}
-          </div>
-          
-          <button 
-            id="send-files-btn" 
-            className="btn" 
-            disabled={!connection || selectedFiles.length === 0}
-            onClick={sendFiles}
-          >
-            发送文件
-          </button>
-        </div>
-        
-        <div id="text" className={`tab-pane ${activeTab === 'text' ? 'active' : ''}`}>
-          <textarea 
-            id="text-input" 
-            placeholder="输入要发送的文本..." 
-            value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-          ></textarea>
-          <button 
-            id="send-text-btn" 
-            className="btn" 
-            disabled={!connection || !textInput.trim()}
-            onClick={sendText}
-          >
-            发送文本
-          </button>
-        </div>
-      </div>
-      
-      <div className="received-panel">
-        <h2>已接收内容</h2>
-        <div id="received-files" className="received-items">
-          {receivedFiles.map((file) => {
-            const isImage = file.type.startsWith('image/');
-            
-            return (
-              <div key={file.id} className="received-item">
-                <div className="file-info">
-                  <span className="file-icon">{isImage ? '🖼️' : '📄'}</span>
-                  <span className="file-name">{file.name}</span>
-                  <span className="file-size">{formatFileSize(file.size)}</span>
-                </div>
-                
-                {isImage && (
-                  <div className="image-preview">
-                    <img 
-                      src={file.url} 
-                      alt={file.name} 
-                      style={{ maxWidth: '200px', maxHeight: '200px', margin: '10px 0' }}
-                    />
-                  </div>
-                )}
-                
-                <div className="file-actions">
-                  <a href={file.url} download={file.name} className="btn-small">下载</a>
-                  {isImage && (
-                    <button 
-                      className="btn-small copy-image" 
-                      onClick={() => copyImageToClipboard(file.url, file.name)}
-                    >
-                      复制图片
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        
-        <div id="received-text" className="received-items">
-          {receivedTexts.map((text) => (
-            <div key={text.id} className="received-text">
-              <div>{text.content}</div>
-              <small>{text.timestamp}</small>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
+      {connectStep === 'connect' ? (
+        <ConnectionPanel 
+          myPeerId={myPeerId} 
+          connectionStatus={connectionStatus}
+          onConnect={handleConnect}
+        />
+      ) : (
+        <TransferPage 
+          connectionStatus={connectionStatus}
+          onReceivedData={handleReceivedData}
+          sendData={sendData}
+          receivedFiles={receivedFiles}
+          receivedTexts={receivedTexts}
+          onDisconnect={handleDisconnect}
+        />
+      )}
+    </div>
   );
 } 
