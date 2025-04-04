@@ -162,6 +162,18 @@ export default function TransferPage({
     }
   };
 
+  // 复制文本到剪贴板
+  const copyTextToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        showToast('文本已复制到剪贴板');
+      })
+      .catch(err => {
+        console.error('复制文本失败:', err);
+        showToast('复制失败，请手动选择并复制', true);
+      });
+  };
+
   // 设置拖放区域事件
   useEffect(() => {
     if (!dragAreaRef.current) return;
@@ -358,8 +370,17 @@ export default function TransferPage({
         <div id="received-text" className="received-items">
           {receivedTexts.map((text) => (
             <div key={text.id} className="received-text">
-              <div>{text.content}</div>
-              <small>{text.timestamp}</small>
+              <div className="text-content">{text.content}</div>
+              <div className="text-footer">
+                <small>{text.timestamp}</small>
+                <button 
+                  className="btn-small copy-text"
+                  onClick={() => copyTextToClipboard(text.content)}
+                  title="复制文本"
+                >
+                  复制
+                </button>
+              </div>
             </div>
           ))}
         </div>

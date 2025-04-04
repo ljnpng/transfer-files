@@ -399,4 +399,39 @@ textarea {
   .file-info {
     font-size: 14px;
   }
+}
+
+/* 文本复制样式 */
+.text-content {
+  word-break: break-all;
+  margin-bottom: 5px;
+}
+
+.text-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.text-footer small {
+  display: inline-block;
+  color: #777;
+  font-size: 12px;
+}
+
+.copy-text {
+  background-color: #f1f1f1;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-text:hover {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
 } 
