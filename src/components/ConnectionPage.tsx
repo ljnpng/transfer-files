@@ -32,7 +32,11 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
 
   // 生成二维码
   useEffect(() => {
-    if (!myPeerId || typeof window === 'undefined' || !window.QRCode || !qrcodeRef.current) return;
+    if (!myPeerId || typeof window === 'undefined' || !qrcodeRef.current) return;
+    
+    // 使用类型断言检查QRCode是否存在
+    const qrCode = (window as any).QRCode;
+    if (!qrCode) return;
 
     try {
       // 清空内容
@@ -53,7 +57,7 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
       qrcodeRef.current.height = 180;
       
       // 使用QRCode库生成二维码
-      window.QRCode.toCanvas(qrcodeRef.current, scanUrl, {
+      qrCode.toCanvas(qrcodeRef.current, scanUrl, {
         width: 180,
         margin: 1,
         color: {
