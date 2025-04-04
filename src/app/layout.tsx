@@ -6,7 +6,10 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "设备间传输",
-  description: "基于 WebRTC 的点对点文件传输工具",
+  description: "安全、快速的跨设备文件传输工具",
+  icons: {
+    icon: '/favicon.svg',
+  }
 };
 
 export default function RootLayout({
