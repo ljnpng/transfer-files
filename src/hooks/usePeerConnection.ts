@@ -55,12 +55,12 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
         setConnectionStatus('在线，等待连接');
       });
 
-      peer.on('connection', (conn) => {
+      peer.on('connection', (conn: any) => {
         setupConnection(conn);
         setConnectionStatus(`已连接到 ${conn.peer}`);
       });
 
-      peer.on('error', (error) => {
+      peer.on('error', (error: any) => {
         console.error('Peer连接错误:', error);
         setConnectionStatus('连接错误');
       });

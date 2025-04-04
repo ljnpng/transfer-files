@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ScanPage() {
+// 创建一个包含useSearchParams的组件
+function ScanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const connectId = searchParams.get('connect');
@@ -25,12 +26,23 @@ export default function ScanPage() {
   }, [connectId, router]);
 
   return (
-    <div className="container">
-      <h1>正在连接到设备</h1>
+    <>
       <p>二维码扫描成功，正在建立连接...</p>
       <div className="loader"></div>
       <p id="status">{status}</p>
       <a href="/" className="btn">返回主页</a>
+    </>
+  );
+}
+
+// 主页面组件，使用Suspense包裹
+export default function ScanPage() {
+  return (
+    <div className="container">
+      <h1>正在连接到设备</h1>
+      <Suspense fallback={<div>正在加载连接信息...</div>}>
+        <ScanContent />
+      </Suspense>
     </div>
   );
 } 
