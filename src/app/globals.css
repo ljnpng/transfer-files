@@ -799,4 +799,224 @@ textarea {
 /* 为长页面添加平滑滚动 */
 html {
   scroll-behavior: smooth;
+}
+
+/* Header样式 */
+.site-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.site-header.scrolled {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #333;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-left: 10px;
+  color: #3498db;
+}
+
+.main-nav ul {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+}
+
+.main-nav li a {
+  text-decoration: none;
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.main-nav li a:hover {
+  color: #3498db;
+}
+
+.main-nav li.active a {
+  color: #3498db;
+  font-weight: 600;
+}
+
+/* 博客列表样式 */
+.blog-container {
+  max-width: 900px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.blog-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.blog-header h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.blog-header p {
+  font-size: 1.1rem;
+  color: #666;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.blog-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.blog-card {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.blog-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.blog-card a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.blog-card-content {
+  padding: 20px;
+}
+
+.blog-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.blog-card .excerpt {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.blog-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #999;
+  font-size: 0.85rem;
+}
+
+/* 博客文章页面样式 */
+.blog-post {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.blog-post-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.blog-post-header h1 {
+  font-size: 2.8rem;
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.2;
+}
+
+.blog-post-meta {
+  color: #999;
+  font-size: 0.95rem;
+}
+
+.blog-post-content {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #333;
+}
+
+.blog-post-content h2 {
+  font-size: 1.8rem;
+  margin: 1.8em 0 0.8em;
+  color: #333;
+}
+
+.blog-post-content h3 {
+  font-size: 1.4rem;
+  margin: 1.5em 0 0.7em;
+  color: #333;
+}
+
+.blog-post-content p {
+  margin: 1em 0;
+}
+
+.blog-post-content ul,
+.blog-post-content ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.blog-post-content li {
+  margin: 0.5em 0;
+}
+
+.blog-post-content a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.blog-post-content a:hover {
+  text-decoration: underline;
+}
+
+.blog-post-content blockquote {
+  border-left: 4px solid #3498db;
+  padding-left: 1em;
+  margin: 1.5em 0;
+  color: #666;
+  font-style: italic;
+}
+
+.blog-post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1.5em 0;
 } 

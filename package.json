@@ -9,19 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "gray-matter": "^4.0.3",
     "next": "14.2.4",
+    "peerjs": "^1.4.7",
+    "qrcode": "^1.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "peerjs": "^1.4.7",
-    "qrcode": "^1.5.1"
+    "remark": "^15.0.1",
+    "remark-html": "^16.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/qrcode": "^1.5.5",
-    "typescript": "^5",
     "eslint": "^8.0.0",
-    "eslint-config-next": "14.2.4"
+    "eslint-config-next": "14.2.4",
+    "typescript": "^5"
   }
-} 
+}
