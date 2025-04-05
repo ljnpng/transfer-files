@@ -47,8 +47,11 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
 
     try {
       const Peer = window.Peer;
+      // 生成随机ID
+      const randomId = `tf-${Math.random().toString(36).substr(2, 9)}`;
+      
       // Add PeerJS configuration with multiple STUN/TURN servers
-      const peer = new Peer({
+      const peer = new Peer(randomId, {
         config: {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
