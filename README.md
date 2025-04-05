@@ -1,88 +1,139 @@
-# Share Anything - 设备间文件传输工具
+# TransferFiles
 
-这是一个基于 Next.js、WebRTC 和 PeerJS 的点对点文件/图片/文本传输工具，不依赖中央服务器进行数据传输。
+<div align="center">
+  <h3>Fast, secure, and direct file transfers between any devices - no installation required.</h3>
+  
+  ![License](https://img.shields.io/github/license/yourusername/transferfiles)
+  ![Next.js](https://img.shields.io/badge/Next.js-14.2.4-blue)
+  ![WebRTC](https://img.shields.io/badge/WebRTC-Powered-green)
+</div>
 
-## 功能特点
+## Overview
 
-- 📱 支持不同设备间的文件传输（电脑、手机、平板等）
-- 🔒 点对点直接传输，数据不经过服务器
-- 📄 支持传输文本、图片和任意类型文件
-- 🖱️ 支持拖放文件上传
-- 📋 可通过ID或二维码建立连接
-- 🖼️ 支持图片预览和复制到剪贴板
+TransferFiles is an open-source web application that enables secure file transfers between any devices, without requiring installation, shared networks, or user accounts. Built with modern web technologies, it creates direct peer-to-peer connections for fast, private file sharing.
 
-## 系统要求
+**Demo**: [https://transferfiles.pro](https://transferfiles.pro)
 
-- Node.js v18.18.0 或以上版本
-- 支持 WebRTC 的浏览器（Chrome, Firefox, Safari, Edge 等现代浏览器）
+![TransferFiles Demo](public/images/demo.png)
 
-## 使用方法
+## Key Features
 
-1. 确保使用正确的 Node.js 版本（v18+）
+- **Universal Compatibility**: Works between any devices and operating systems (Windows, macOS, iOS, Android, Linux)
+- **No Installation**: Runs entirely in the browser with no downloads or plugins required
+- **Network Independent**: Transfer files between devices on different networks or locations
+- **End-to-End Encryption**: All transfers are secured with WebRTC's built-in encryption
+- **No Size Limits**: Transfer files of any size without restrictions
+- **Privacy-Focused**: Files are transferred directly between devices, never through our servers
+- **No Account Required**: Use instantly without registration or personal information
+- **Instant Messaging**: Text chat alongside file transfers in an IM-style interface
+- **QR Code Connectivity**: Quickly connect devices by scanning a QR code
 
-2. 安装依赖：
+## How It Works
 
-```bash
-npm install
-# 或
-yarn install
-# 或
-pnpm install
-```
+TransferFiles uses WebRTC technology with STUN/TURN servers to establish direct peer-to-peer connections between devices:
 
-3. 启动开发服务器：
+1. **Connect Devices**: Generate a unique ID or QR code on one device and enter/scan it on another
+2. **Select Files**: Choose files to send or type messages in the chat interface
+3. **Transfer Content**: Files and messages are sent directly to the connected device
+4. **Instant Access**: Access transferred files immediately, with download options
 
-```bash
-npm run dev
-# 或
-yarn dev
-# 或
-pnpm dev
-```
+The technology behind TransferFiles enables connections across different networks and NAT types, making it work in scenarios where traditional file sharing methods fail.
 
-4. 访问应用：
-   - 本机访问：http://localhost:3000
-   - 局域网内其他设备访问：http://你的IP地址:3000
+## Getting Started
 
-5. 获取连接方式：
-   - 分享你的 Peer ID 给对方
-   - 或让对方扫描生成的二维码
+### Prerequisites
 
-6. 建立连接：
-   - 在另一台设备上访问应用
-   - 输入第一台设备的 ID 并点击"连接"
-   - 或扫描第一台设备显示的二维码
+- Node.js 18.x or higher
+- npm or yarn
 
-7. 开始传输文件或文本
+### Installation
 
-## 构建生产版本
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/transferfiles.git
+   cd transferfiles
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Set up environment variables:
+   Create a `.env.local` file with the following (optional):
+   ```
+   NEXT_PUBLIC_GA_ID=your-google-analytics-id
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Building for Production
 
 ```bash
 npm run build
-npm run start
-# 或
+# or
 yarn build
-yarn start
-# 或
-pnpm build
-pnpm start
 ```
 
-## 注意事项
+## Technology Stack
 
-- 在本地网络中，其他设备可以通过你的 IP 地址访问此应用
-- WebRTC 连接需要双方设备都能访问互联网
-- 大文件传输可能需要耐心等待
-- 部分旧浏览器可能不支持 WebRTC 功能
+- **Frontend Framework**: Next.js 14 (React)
+- **Language**: TypeScript
+- **Real-time Communication**: WebRTC via PeerJS
+- **Connectivity**: STUN/TURN servers for NAT traversal
+- **QR Code**: QRCode.js for connection sharing
+- **Styling**: CSS with JSX styling
+- **Blog System**: Markdown with gray-matter and remark
+- **Analytics**: Google Analytics (optional)
 
-## 技术栈
+## Use Cases
 
-- Next.js (React 框架)
-- TypeScript (类型安全的 JavaScript)
-- WebRTC (点对点通信)
-- PeerJS (WebRTC 封装库)
-- React Hooks (状态管理)
+- Transfer photos from a phone to a computer
+- Share work documents between office and home devices
+- Send files to friends/family regardless of their location
+- Move data between different operating systems
+- Share code snippets or text between devices
+- Quick file sharing without cloud storage
 
-## 许可
+## Security Considerations
 
-ISC License 
+- All data transfers are end-to-end encrypted
+- No data is stored on any servers
+- Direct peer-to-peer connections when possible
+- Relay servers only transmit encrypted data when direct connections aren't possible
+- No user tracking or data collection beyond optional analytics
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [PeerJS](https://peerjs.com/) for WebRTC implementation
+- [Next.js](https://nextjs.org/) for the React framework
+- The WebRTC community for making peer-to-peer web communication possible
+
+---
+
+<p align="center">
+  Made with ❤️ for a more open and private web
+</p> 
