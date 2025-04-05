@@ -508,6 +508,40 @@ input:focus, textarea:focus {
     padding: 0 15px;
   }
   
+  /* 移动端状态栏样式 */
+  .status-bar {
+    position: sticky;
+    top: 50px; /* 适应移动端导航栏高度 */
+    margin: 0 -15px 15px -15px;
+    width: calc(100% + 30px);
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: rgba(249, 249, 249, 0.95);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  
+  /* ConnectionPanel中的状态指示器 */
+  .status-indicator {
+    margin: 15px -15px -15px -15px;
+    width: calc(100% + 30px);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 10px 15px;
+    position: sticky;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+    z-index: 50;
+  }
+  
   .connection-methods {
     flex-direction: column;
     gap: 15px;
@@ -729,6 +763,9 @@ input:focus, textarea:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  top: 65px; /* 在Header下面固定显示 */
+  z-index: 90;
 }
 
 .status-bar .status-actions {
