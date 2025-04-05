@@ -181,6 +181,16 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     return false;
   }, [connection]);
 
+  // Disconnect from current peer
+  const disconnect = useCallback(() => {
+    if (connection) {
+      connection.close();
+      setConnection(null);
+      setConnected(false);
+      setConnectionStatus('Not connected');
+    }
+  }, [connection]);
+
   // Handle connection parameters in URL
   useEffect(() => {
     if (typeof window === 'undefined' || !myPeerId) return;
@@ -208,6 +218,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     connected,
     connectToPeer,
     sendData,
+    disconnect,
     peer: peerRef.current
   };
 } 
