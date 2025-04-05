@@ -14,7 +14,7 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
   const [copyBtnText, setCopyBtnText] = useState('Copy');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
 
-  // 生成QR码
+  // Generate QR code
   useEffect(() => {
     if (myPeerId && qrcodeRef.current) {
       const scanUrl = `${window.location.origin}/scan?connect=${myPeerId}`;
@@ -29,7 +29,7 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
     }
   }, [myPeerId]);
 
-  // 复制ID到剪贴板
+  // Copy ID to clipboard
   const copyIdToClipboard = () => {
     if (myPeerId) {
       navigator.clipboard.writeText(myPeerId).then(() => {

@@ -27,34 +27,36 @@ interface ReceivedText {
 
 export default function FileTransfer() {
   // Initialize WebRTC connection
-  const [receivedFiles, setReceivedFiles] = useState<any[]>([]);
-  const [receivedTexts, setReceivedTexts] = useState<any[]>([]);
+  const [receivedFiles, setReceivedFiles] = useState<ReceivedFile[]>([]);
+  const [receivedTexts, setReceivedTexts] = useState<ReceivedText[]>([]);
   
-  // Process received data from peer
+  // Handle data received from peer
   function handleReceivedData(data: any) {
     if (data.type === 'file') {
-      // Create blob URL for file and add to received files
+      // Create blob URL for file and add to received files list
       const blob = new Blob([data.data], { type: data.dataType });
       const url = URL.createObjectURL(blob);
       
-      setReceivedFiles(prev => [...prev, {
+      const newFile = {
         name: data.name,
         size: data.size,
         url,
         type: data.dataType,
         id: Date.now().toString()
-      }]);
+      };
       
+      setReceivedFiles(prev => [...prev, newFile]);
       showToast(`Received file: ${data.name}`);
     } else if (data.type === 'text') {
       // Add received text message
-      setReceivedTexts(prev => [...prev, {
+      const newText = {
         content: data.content,
         timestamp: new Date(data.timestamp).toLocaleString(),
         id: Date.now().toString()
-      }]);
+      };
       
-      showToast('Received text message');
+      setReceivedTexts(prev => [...prev, newText]);
+      showToast('Received new message');
     }
   }
 
@@ -71,7 +73,7 @@ export default function FileTransfer() {
     onData: handleReceivedData
   });
 
-  // Clear connection data when unmounting
+  // Clean up connections when component unmounts
   useEffect(() => {
     return () => {
       // Clean up received file URLs to prevent memory leaks
@@ -83,17 +85,25 @@ export default function FileTransfer() {
     };
   }, [receivedFiles]);
 
+  // Replace connection status with English descriptions
+  const getEnglishConnectionStatus = (status: string) => {
+    // The connectionStatus is already in English from the usePeerConnection hook
+    return status;
+  };
+
+  const translatedStatus = getEnglishConnectionStatus(connectionStatus);
+
   return (
     <div className="transfer-wrapper">
       {!connected ? (
         <ConnectionPanel 
           myPeerId={myPeerId} 
-          connectionStatus={connectionStatus}
+          connectionStatus={translatedStatus}
           onConnect={connectToPeer}
         />
       ) : (
         <TransferPage 
-          connectionStatus={connectionStatus}
+          connectionStatus={translatedStatus}
           onReceivedData={handleReceivedData}
           sendData={sendData}
           receivedFiles={receivedFiles}
