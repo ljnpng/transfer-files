@@ -16,6 +16,186 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
   const peerRef = useRef<any>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [peerLoaded, setPeerLoaded] = useState<boolean>(false);
+  // 存储随机ID以便在重连时使用
+  const randomIdRef = useRef<string>(`tf-${Math.random().toString(36).substr(2, 9)}`);
+  // 存储尝试重连次数，避免无限重连
+  const reconnectAttempts = useRef<number>(0);
+  // 存储handleDisconnect函数的引用
+  const handleDisconnectRef = useRef<any>(null);
+
+  // Setup connection
+  const setupConnection = useCallback((conn: any) => {
+    setConnection(conn);
+    
+    console.log('Setting up connection:', conn.peer);
+    
+    conn.on('open', () => {
+      console.log('Connection opened:', conn.peer);
+      setConnectionStatus(`Connected to ${conn.peer}`);
+      setConnected(true);
+      if (options.onConnection) options.onConnection(conn);
+    });
+    
+    conn.on('data', (data: any) => {
+      console.log('Received data type:', data?.type);
+      if (options.onData) options.onData(data);
+    });
+    
+    conn.on('close', () => {
+      console.log('Connection closed');
+      setConnectionStatus('Connection closed');
+      setConnected(false);
+      setConnection(null);
+      if (options.onConnectionClose) options.onConnectionClose();
+    });
+    
+    conn.on('error', (error: any) => {
+      console.error('Connection error:', error);
+      setConnectionStatus('Connection error');
+      if (options.onConnectionError) options.onConnectionError(error);
+    });
+    
+    // Add connection timeout handling
+    setTimeout(() => {
+      if (conn.open === false) {
+        console.log('Connection timed out');
+        setConnectionStatus('Connection timed out, please try again');
+      }
+    }, 20000); // 20 seconds timeout
+  }, [options]);
+
+  // Connect to peer
+  const connectToPeer = useCallback((peerId: string) => {
+    if (!peerRef.current) {
+      console.error('Peer not initialized');
+      return;
+    }
+    
+    setConnectionStatus('Connecting...');
+    const conn = peerRef.current.connect(peerId, {
+      reliable: true
+    });
+    
+    setupConnection(conn);
+  }, [setupConnection]);
+
+  // 处理断开连接的函数
+  const handleDisconnect = useCallback(() => {
+    if (!peerRef.current) return;
+    
+    console.log('Disconnected from PeerJS server, attempting to reconnect...');
+    setConnectionStatus('Connection lost, attempting to reconnect...');
+    
+    // 限制重连尝试次数
+    if (reconnectAttempts.current >= 3) {
+      console.log('Maximum reconnection attempts reached');
+      setConnectionStatus('Unable to reconnect. Please refresh the page.');
+      return;
+    }
+    
+    reconnectAttempts.current += 1;
+    
+    // 尝试使用内置的重连方法
+    if (typeof peerRef.current.reconnect === 'function') {
+      try {
+        (peerRef.current as any).reconnect();
+        return;
+      } catch (err) {
+        console.error('Built-in reconnect failed:', err);
+      }
+    }
+    
+    // 创建新连接作为备选方案
+    try {
+      const oldPeer = peerRef.current;
+      oldPeer.destroy();
+      
+      const Peer = window.Peer;
+      if (!Peer) {
+        setConnectionStatus('PeerJS library not available');
+        return;
+      }
+      
+      const newPeer = new Peer(randomIdRef.current, {
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' },
+            { urls: 'stun:stun.stunprotocol.org:3478' }
+          ],
+          iceCandidatePoolSize: 10,
+        },
+        debug: 2
+      });
+      
+      // 为新创建的对等连接添加事件监听器
+      newPeer.on('open', (id: string) => {
+        reconnectAttempts.current = 0; // 重置重连尝试计数
+        setMyPeerId(id);
+        setConnectionStatus('Reconnected, waiting for connection');
+        console.log('PeerJS reconnection opened, ID:', id);
+      });
+      
+      newPeer.on('connection', (conn: any) => {
+        console.log('Connection request received after reconnect:', conn.peer);
+        setupConnection(conn);
+        setConnectionStatus(`Connected to ${conn.peer}`);
+      });
+      
+      newPeer.on('error', (error: any) => {
+        console.error('Peer connection error after reconnect:', error);
+        let errorMsg = 'Connection error';
+        if (error.type === 'peer-unavailable') {
+          errorMsg = 'Remote device unavailable';
+        } else if (error.type === 'network') {
+          errorMsg = 'Network connection issue';
+        } else if (error.type === 'disconnected') {
+          errorMsg = 'Disconnected from server';
+        } else if (error.type === 'server-error') {
+          errorMsg = 'Server error';
+        }
+        setConnectionStatus(errorMsg);
+      });
+      
+      // 为新连接添加断开事件处理
+      if (handleDisconnectRef.current) {
+        newPeer.on('disconnected', handleDisconnectRef.current);
+      }
+      
+      peerRef.current = newPeer;
+    } catch (err) {
+      console.error('Failed to create new peer connection:', err);
+      setConnectionStatus('Reconnection failed');
+    }
+  }, [setupConnection]);
+
+  // 保存handleDisconnect函数的引用以避免循环依赖
+  useEffect(() => {
+    handleDisconnectRef.current = handleDisconnect;
+  }, [handleDisconnect]);
+
+  // Send data
+  const sendData = useCallback((data: any) => {
+    if (connection) {
+      connection.send(data);
+      return true;
+    }
+    return false;
+  }, [connection]);
+
+  // Disconnect from current peer
+  const disconnect = useCallback(() => {
+    if (connection) {
+      connection.close();
+      setConnection(null);
+      setConnected(false);
+      setConnectionStatus('Not connected');
+    }
+  }, [connection]);
 
   // Check if Peer library is loaded
   useEffect(() => {
@@ -47,8 +227,8 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
 
     try {
       const Peer = window.Peer;
-      // 生成随机ID
-      const randomId = `tf-${Math.random().toString(36).substr(2, 9)}`;
+      // 使用已保存的随机ID
+      const randomId = randomIdRef.current;
       
       // Add PeerJS configuration with multiple STUN/TURN servers
       const peer = new Peer(randomId, {
@@ -98,14 +278,10 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
         setConnectionStatus(errorMsg);
       });
 
-      // Add additional handling
-      peer.on('disconnected', () => {
-        console.log('Disconnected from PeerJS server, attempting to reconnect...');
-        setConnectionStatus('Connection lost, attempting to reconnect...');
-        
-        // Attempt to reconnect to the server
-        peer.reconnect();
-      });
+      // Add additional handling 
+      if (handleDisconnectRef.current) {
+        peer.on('disconnected', handleDisconnectRef.current);
+      }
 
       return () => {
         if (peerRef.current) {
@@ -117,82 +293,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       console.error('PeerJS initialization failed:', err);
       setConnectionStatus('Initialization failed');
     }
-  }, [peerLoaded]);
-
-  // Connect to peer
-  const connectToPeer = useCallback((peerId: string) => {
-    if (!peerRef.current) {
-      console.error('Peer not initialized');
-      return;
-    }
-    
-    setConnectionStatus('Connecting...');
-    const conn = peerRef.current.connect(peerId, {
-      reliable: true
-    });
-    
-    setupConnection(conn);
-  }, []);
-
-  // Setup connection
-  const setupConnection = useCallback((conn: any) => {
-    setConnection(conn);
-    
-    console.log('Setting up connection:', conn.peer);
-    
-    conn.on('open', () => {
-      console.log('Connection opened:', conn.peer);
-      setConnectionStatus(`Connected to ${conn.peer}`);
-      setConnected(true);
-      if (options.onConnection) options.onConnection(conn);
-    });
-    
-    conn.on('data', (data: any) => {
-      console.log('Received data type:', data?.type);
-      if (options.onData) options.onData(data);
-    });
-    
-    conn.on('close', () => {
-      console.log('Connection closed');
-      setConnectionStatus('Connection closed');
-      setConnected(false);
-      setConnection(null);
-      if (options.onConnectionClose) options.onConnectionClose();
-    });
-    
-    conn.on('error', (error: any) => {
-      console.error('Connection error:', error);
-      setConnectionStatus('Connection error');
-      if (options.onConnectionError) options.onConnectionError(error);
-    });
-    
-    // Add connection timeout handling
-    setTimeout(() => {
-      if (conn.open === false) {
-        console.log('Connection timed out');
-        setConnectionStatus('Connection timed out, please try again');
-      }
-    }, 20000); // 20 seconds timeout
-  }, [options]);
-
-  // Send data
-  const sendData = useCallback((data: any) => {
-    if (connection) {
-      connection.send(data);
-      return true;
-    }
-    return false;
-  }, [connection]);
-
-  // Disconnect from current peer
-  const disconnect = useCallback(() => {
-    if (connection) {
-      connection.close();
-      setConnection(null);
-      setConnected(false);
-      setConnectionStatus('Not connected');
-    }
-  }, [connection]);
+  }, [peerLoaded, setupConnection]);
 
   // Handle connection parameters in URL
   useEffect(() => {
