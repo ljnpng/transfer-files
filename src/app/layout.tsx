@@ -24,6 +24,7 @@ export default function RootLayout({
       <head>
         <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+        <script defer data-domain="transferfiles.pro" src="https://app.pageview.app/js/script.js"></script>
       </head>
       <body className={inter.className}>
         <Header />
