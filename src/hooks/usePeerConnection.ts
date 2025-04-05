@@ -110,63 +110,75 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       const oldPeer = peerRef.current;
       oldPeer.destroy();
       
-      const Peer = window.Peer;
-      if (!Peer) {
-        setConnectionStatus('PeerJS library not available');
-        return;
-      }
-      
-      const newPeer = new Peer(randomIdRef.current, {
-        config: {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' },
-            { urls: 'stun:global.stun.twilio.com:3478' },
-            { urls: 'stun:stun.stunprotocol.org:3478' }
-          ],
-          iceCandidatePoolSize: 10,
-        },
-        debug: 2
-      });
-      
-      // 为新创建的对等连接添加事件监听器
-      newPeer.on('open', (id: string) => {
-        reconnectAttempts.current = 0; // 重置重连尝试计数
-        setMyPeerId(id);
-        setConnectionStatus('Reconnected, waiting for connection');
-        console.log('PeerJS reconnection opened, ID:', id);
-      });
-      
-      newPeer.on('connection', (conn: any) => {
-        console.log('Connection request received after reconnect:', conn.peer);
-        setupConnection(conn);
-        setConnectionStatus(`Connected to ${conn.peer}`);
-      });
-      
-      newPeer.on('error', (error: any) => {
-        console.error('Peer connection error after reconnect:', error);
-        let errorMsg = 'Connection error';
-        if (error.type === 'peer-unavailable') {
-          errorMsg = 'Remote device unavailable';
-        } else if (error.type === 'network') {
-          errorMsg = 'Network connection issue';
-        } else if (error.type === 'disconnected') {
-          errorMsg = 'Disconnected from server';
-        } else if (error.type === 'server-error') {
-          errorMsg = 'Server error';
+      // 等待一小段时间确保旧连接完全关闭
+      setTimeout(() => {
+        try {
+          const Peer = window.Peer;
+          if (!Peer) {
+            setConnectionStatus('PeerJS library not available');
+            return;
+          }
+          
+          // 生成一个新的随机ID，而不是重用之前的ID
+          const newRandomId = `tf-${Math.random().toString(36).substr(2, 9)}`;
+          randomIdRef.current = newRandomId;
+          
+          const newPeer = new Peer(newRandomId, {
+            config: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' },
+                { urls: 'stun:stun.stunprotocol.org:3478' }
+              ],
+              iceCandidatePoolSize: 10,
+            },
+            debug: 2
+          });
+          
+          // 为新创建的对等连接添加事件监听器
+          newPeer.on('open', (id: string) => {
+            reconnectAttempts.current = 0; // 重置重连尝试计数
+            setMyPeerId(id);
+            setConnectionStatus('Reconnected, waiting for connection');
+            console.log('PeerJS reconnection opened, ID:', id);
+          });
+          
+          newPeer.on('connection', (conn: any) => {
+            console.log('Connection request received after reconnect:', conn.peer);
+            setupConnection(conn);
+            setConnectionStatus(`Connected to ${conn.peer}`);
+          });
+          
+          newPeer.on('error', (error: any) => {
+            console.error('Peer connection error after reconnect:', error);
+            let errorMsg = 'Connection error';
+            if (error.type === 'peer-unavailable') {
+              errorMsg = 'Remote device unavailable';
+            } else if (error.type === 'network') {
+              errorMsg = 'Network connection issue';
+            } else if (error.type === 'disconnected') {
+              errorMsg = 'Disconnected from server';
+            } else if (error.type === 'server-error') {
+              errorMsg = 'Server error';
+            }
+            setConnectionStatus(errorMsg);
+          });
+          
+          // 为新连接添加断开事件处理
+          if (handleDisconnectRef.current) {
+            newPeer.on('disconnected', handleDisconnectRef.current);
+          }
+          
+          peerRef.current = newPeer;
+        } catch (err) {
+          console.error('Failed to create new peer connection inside timeout:', err);
+          setConnectionStatus('Reconnection failed');
         }
-        setConnectionStatus(errorMsg);
-      });
-      
-      // 为新连接添加断开事件处理
-      if (handleDisconnectRef.current) {
-        newPeer.on('disconnected', handleDisconnectRef.current);
-      }
-      
-      peerRef.current = newPeer;
+      }, 1000); // Wait for the old connection to close before creating a new one
     } catch (err) {
       console.error('Failed to create new peer connection:', err);
       setConnectionStatus('Reconnection failed');
