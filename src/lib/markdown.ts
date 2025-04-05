@@ -47,7 +47,7 @@ export async function getAllBlogs() {
 }
 
 // 获取所有博客的slug列表
-export function getAllBlogSlugs() {
+export async function getAllBlogSlugs() {
   const fileNames = fs.readdirSync(blogsDirectory);
   
   return fileNames

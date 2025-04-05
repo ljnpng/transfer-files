@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 
 export async function generateStaticParams() {
-  const paths = getAllBlogSlugs();
+  const paths = await getAllBlogSlugs();
   return paths;
 }
 
