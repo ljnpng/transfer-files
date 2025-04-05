@@ -50,7 +50,7 @@ The technology behind TransferFiles enables connections across different network
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/transferfiles.git
+   git clone https://github.com/CoderLim/transferfiles.git
    cd transferfiles
    ```
 
