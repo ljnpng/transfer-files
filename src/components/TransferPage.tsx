@@ -39,7 +39,7 @@ export default function TransferPage({
   receivedTexts,
   onDisconnect
 }: TransferPageProps) {
-  // 状态管理
+  // State management
   const [activeTab, setActiveTab] = useState<'file' | 'text'>('file');
   const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([]);
   const [textInput, setTextInput] = useState('');
@@ -48,7 +48,7 @@ export default function TransferPage({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragAreaRef = useRef<HTMLDivElement>(null);
   
-  // 处理文件选择
+  // Handle file selection
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     
@@ -60,12 +60,12 @@ export default function TransferPage({
     setSelectedFiles(prev => [...prev, ...newFiles]);
   };
   
-  // 移除选中的文件
+  // Remove selected file
   const removeFile = (id: string) => {
     setSelectedFiles(prev => prev.filter(file => file.id !== id));
   };
   
-  // 发送文件
+  // Send files
   const sendFiles = async () => {
     if (selectedFiles.length === 0) return;
     
@@ -78,7 +78,7 @@ export default function TransferPage({
         const file = fileItem.file;
         const arrayBuffer = await file.arrayBuffer();
         
-        // 准备文件元数据
+        // Prepare file metadata
         const fileData = {
           type: 'file',
           name: file.name,
@@ -87,59 +87,59 @@ export default function TransferPage({
           data: arrayBuffer
         };
         
-        // 发送文件数据
+        // Send file data
         if (sendData(fileData)) {
           completedFiles++;
           setTransferProgress((completedFiles / totalFiles) * 100);
-          showToast(`正在发送: ${file.name}`);
+          showToast(`Sending: ${file.name}`);
         } else {
-          showToast('发送失败，请检查连接', true);
+          showToast('Send failed, please check connection', true);
           setIsTransferring(false);
           return;
         }
       } catch (error) {
-        console.error('读取文件失败:', error);
-        showToast('文件发送失败', true);
+        console.error('Failed to read file:', error);
+        showToast('File transfer failed', true);
         setIsTransferring(false);
         return;
       }
     }
     
-    // 清空文件列表
+    // Clear file list
     setSelectedFiles([]);
     setTransferProgress(0);
     setIsTransferring(false);
-    showToast('文件发送完成');
+    showToast('File transfer completed');
   };
   
-  // 发送文本
+  // Send text
   const sendText = () => {
     if (!textInput.trim()) return;
     
-    // 准备文本数据
+    // Prepare text data
     const textData = {
       type: 'text',
       content: textInput.trim(),
       timestamp: new Date().toISOString()
     };
     
-    // 发送文本数据
+    // Send text data
     if (sendData(textData)) {
-      // 清空输入框
+      // Clear input
       setTextInput('');
-      showToast('文本发送成功');
+      showToast('Text sent successfully');
     } else {
-      showToast('发送失败，请检查连接', true);
+      showToast('Send failed, please check connection', true);
     }
   };
   
-  // 复制图片到剪贴板
+  // Copy image to clipboard
   const copyImageToClipboard = async (url: string, fileName: string) => {
     try {
-      // 检查 Clipboard API 是否可用
+      // Check if Clipboard API is available
       if (!navigator.clipboard) {
-        console.error('浏览器不支持 Clipboard API');
-        showToast('您的浏览器不支持复制功能，请手动下载图片', true);
+        console.error('Browser does not support Clipboard API');
+        showToast('Your browser does not support copying, please download the image manually', true);
         return;
       }
 
@@ -147,70 +147,75 @@ export default function TransferPage({
       const blob = await response.blob();
       
       try {
-        // 检查 ClipboardItem 是否可用
+        // Check if ClipboardItem is supported
         if (typeof ClipboardItem === 'undefined') {
-          throw new Error('ClipboardItem 不受支持');
+          throw new Error('ClipboardItem not supported');
         }
 
-        // 尝试使用新的 Clipboard API
+        // Try using the new Clipboard API
         await navigator.clipboard.write([
           new ClipboardItem({
             [blob.type]: blob
           })
         ]);
-        showToast(`已复制图片 ${fileName}`);
+        showToast(`Copied image ${fileName}`);
       } catch (err) {
-        console.error('复制到剪贴板失败:', err);
+        console.error('Copy to clipboard failed:', err);
         
-        // 退化方案：创建一个临时链接并打开图片
+        // Fallback: create a temporary link and open the image
         const tempLink = document.createElement('a');
         tempLink.href = url;
         tempLink.target = '_blank';
         tempLink.click();
         
-        showToast('无法直接复制图片，已在新窗口打开，请手动复制', true);
+        showToast('Cannot copy directly, opened in new window for manual copy', true);
       }
     } catch (e) {
-      console.error('无法获取图片数据:', e);
-      showToast('复制失败，请手动下载图片', true);
+      console.error('Could not get image data:', e);
+      showToast('Copy failed, please download the image manually', true);
     }
   };
 
-  // 复制文本到剪贴板
+  // Copy text to clipboard
   const copyTextToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        showToast('文本已复制到剪贴板');
+        showToast('Text copied to clipboard');
       })
       .catch(err => {
-        console.error('复制文本失败:', err);
-        showToast('复制失败，请手动选择并复制', true);
+        console.error('Failed to copy text:', err);
+        showToast('Copy failed, please select and copy manually', true);
       });
   };
+  
+  // Image preview click enlarge
+  const handleImageClick = (url: string) => {
+    window.open(url, '_blank');
+  };
 
-  // 设置拖放区域事件
+  // Set up drag area events
   useEffect(() => {
     if (!dragAreaRef.current) return;
     
     const dragArea = dragAreaRef.current;
     
-    // 阻止默认拖放行为
+    // Prevent default drag behavior
     const preventDefaults = (e: Event) => {
       e.preventDefault();
       e.stopPropagation();
     };
     
-    // 高亮拖放区域
+    // Highlight drag area
     const highlight = () => {
       dragArea.classList.add('highlight');
     };
     
-    // 取消高亮拖放区域
+    // Remove highlight
     const unhighlight = () => {
       dragArea.classList.remove('highlight');
     };
     
-    // 处理拖放文件
+    // Handle file drop
     const handleDrop = (e: DragEvent) => {
       const dt = e.dataTransfer;
       if (dt && dt.files.length > 0) {
@@ -218,7 +223,7 @@ export default function TransferPage({
       }
     };
     
-    // 添加事件监听器
+    // Add event listeners
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
       dragArea.addEventListener(eventName, preventDefaults as EventListener);
     });
@@ -233,7 +238,7 @@ export default function TransferPage({
     
     dragArea.addEventListener('drop', handleDrop as EventListener);
     
-    // 清理事件监听器
+    // Clean up event listeners
     return () => {
       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dragArea.removeEventListener(eventName, preventDefaults as EventListener);
@@ -251,39 +256,34 @@ export default function TransferPage({
     };
   }, []);
   
-  // 图片预览点击放大
-  const handleImageClick = (url: string) => {
-    window.open(url, '_blank');
-  };
-  
   return (
     <>
       <div className="status-bar">
-        <p>状态: <span className={connectionStatus.includes('已连接') ? 'connected-text' : ''}>{connectionStatus}</span></p>
+        <p>Status: <span className={connectionStatus.includes('Connected') ? 'connected-text' : ''}>{connectionStatus}</span></p>
         {onDisconnect && (
           <div className="status-actions">
             <button className="disconnect-btn" onClick={onDisconnect}>
-              <span>断开连接</span>
+              <span>Disconnect</span>
             </button>
           </div>
         )}
       </div>
       
       <div className="transfer-container">
-        <h2>第二步：传输内容</h2>
+        <h2>Step 2: Transfer Content</h2>
         
         <div className="tabs">
           <button 
             className={`tab-btn ${activeTab === 'file' ? 'active' : ''}`} 
             onClick={() => setActiveTab('file')}
           >
-            文件
+            Files
           </button>
           <button 
             className={`tab-btn ${activeTab === 'text' ? 'active' : ''}`}
             onClick={() => setActiveTab('text')}
           >
-            文本
+            Text
           </button>
         </div>
         
@@ -293,8 +293,8 @@ export default function TransferPage({
               ref={dragAreaRef}
             >
               <span className="upload-icon">📤</span>
-              <p>拖放文件到这里或</p>
-              <label htmlFor="file-input" className="file-label">选择文件</label>
+              <p>Drop files here or</p>
+              <label htmlFor="file-input" className="file-label">Choose Files</label>
               <input 
                 type="file" 
                 id="file-input" 
@@ -342,33 +342,33 @@ export default function TransferPage({
               disabled={selectedFiles.length === 0 || isTransferring}
               onClick={sendFiles}
             >
-              {isTransferring ? '发送中...' : '发送文件'}
+              {isTransferring ? 'Sending...' : 'Send Files'}
             </button>
           </div>
           
           <div id="text" className={`tab-pane ${activeTab === 'text' ? 'active' : ''}`}>
             <textarea 
               id="text-input" 
-              placeholder="输入要发送的文本..." 
+              placeholder="Enter text to send..." 
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               onKeyDown={(e) => e.ctrlKey && e.key === 'Enter' && sendText()}
             ></textarea>
-            <div className="send-hint">提示：按 Ctrl+Enter 快速发送</div>
+            <div className="send-hint">Tip: Press Ctrl+Enter to send quickly</div>
             <button 
               id="send-text-btn" 
               className="btn" 
               disabled={!textInput.trim()}
               onClick={sendText}
             >
-              发送文本
+              Send Text
             </button>
           </div>
         </div>
       </div>
       
       <div className="received-panel">
-        <h2>已接收内容</h2>
+        <h2>Received Content</h2>
         <div id="received-files" className="received-items">
           {receivedFiles.length > 0 ? (
             receivedFiles.map((file) => {
@@ -400,13 +400,13 @@ export default function TransferPage({
                   )}
                   
                   <div className="file-actions">
-                    <a href={file.url} download={file.name} className="btn-small download">下载</a>
+                    <a href={file.url} download={file.name} className="btn-small download">Download</a>
                     {isImage && (
                       <button 
                         className="btn-small copy-image" 
                         onClick={() => copyImageToClipboard(file.url, file.name)}
                       >
-                        复制图片
+                        Copy Image
                       </button>
                     )}
                   </div>
@@ -416,7 +416,7 @@ export default function TransferPage({
           ) : (
             <div className="empty-state">
               <div className="icon">📥</div>
-              <p>还没有接收到任何文件</p>
+              <p>No files received yet</p>
             </div>
           )}
         </div>
@@ -431,9 +431,9 @@ export default function TransferPage({
                   <button 
                     className="btn-small copy-text"
                     onClick={() => copyTextToClipboard(text.content)}
-                    title="复制文本"
+                    title="Copy text"
                   >
-                    复制
+                    Copy
                   </button>
                 </div>
               </div>
@@ -441,7 +441,7 @@ export default function TransferPage({
           ) : (
             <div className="empty-state">
               <div className="icon">💬</div>
-              <p>还没有接收到任何文本消息</p>
+              <p>No text messages received yet</p>
             </div>
           )}
         </div>

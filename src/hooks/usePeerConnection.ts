@@ -67,8 +67,8 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
 
       peer.on('open', (id: string) => {
         setMyPeerId(id);
-        setConnectionStatus('在线，等待连接');
-        console.log('PeerJS连接已打开，ID:', id);
+        setConnectionStatus('Online, waiting for connection');
+        console.log('PeerJS connection opened, ID:', id);
       });
 
       peer.on('connection', (conn: any) => {
@@ -97,8 +97,8 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
 
       // 添加额外处理
       peer.on('disconnected', () => {
-        console.log('与PeerJS服务器断开连接，尝试重连...');
-        setConnectionStatus('连接已断开，尝试重连...');
+        console.log('Disconnected from PeerJS server, attempting to reconnect...');
+        setConnectionStatus('Connection lost, attempting to reconnect...');
         
         // 尝试重新连接到服务器
         peer.reconnect();
@@ -123,7 +123,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       return;
     }
     
-    setConnectionStatus('正在连接...');
+    setConnectionStatus('Connecting...');
     const conn = peerRef.current.connect(peerId, {
       reliable: true
     });
@@ -138,8 +138,8 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     console.log('设置连接:', conn.peer);
     
     conn.on('open', () => {
-      console.log('连接已打开:', conn.peer);
-      setConnectionStatus(`已连接到 ${conn.peer}`);
+      console.log('Connection opened:', conn.peer);
+      setConnectionStatus(`Connected to ${conn.peer}`);
       setConnected(true);
       if (options.onConnection) options.onConnection(conn);
     });

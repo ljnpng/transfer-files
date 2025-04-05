@@ -26,7 +26,7 @@ interface ReceivedText {
 }
 
 export default function FileTransfer() {
-  // 使用自定义钩子处理WebRTC连接
+  // Use custom hook to handle WebRTC connection
   const {
     peer,
     connection,
@@ -35,35 +35,35 @@ export default function FileTransfer() {
     myPeerId
   } = usePeerConnection();
   
-  // 本地状态
+  // Local state
   const [connectStep, setConnectStep] = useState<'connect' | 'transfer'>('connect');
   const [receivedFiles, setReceivedFiles] = useState<ReceivedFile[]>([]);
   const [receivedTexts, setReceivedTexts] = useState<ReceivedText[]>([]);
   
-  // 建立连接
+  // Establish connection
   const handleConnect = (peerId: string) => {
     if (!peerId.trim()) {
-      showToast('请输入有效的连接ID', true);
+      showToast('Please enter a valid connection ID', true);
       return;
     }
     
     connectToPeer(peerId);
   };
   
-  // 处理接收到的数据
+  // Handle received data
   const handleReceivedData = (data: any) => {
     if (!data) return;
     
     if (data.type === 'file') {
-      // 处理接收到的文件
+      // Process received file
       try {
         const { name, size, dataType, data: fileData } = data;
         
-        // 创建Blob对象
+        // Create Blob object
         const blob = new Blob([fileData], { type: dataType });
         const url = URL.createObjectURL(blob);
         
-        // 添加到已接收文件列表
+        // Add to received files list
         setReceivedFiles(prev => [
           {
             name,
@@ -75,17 +75,17 @@ export default function FileTransfer() {
           ...prev
         ]);
         
-        showToast(`已接收文件: ${name}`);
+        showToast(`Received file: ${name}`);
       } catch (error) {
-        console.error('处理接收文件失败:', error);
-        showToast('文件接收失败', true);
+        console.error('Failed to process received file:', error);
+        showToast('File reception failed', true);
       }
     } else if (data.type === 'text') {
-      // 处理接收到的文本
+      // Process received text
       try {
         const { content, timestamp } = data;
         
-        // 添加到已接收文本列表
+        // Add to received text list
         setReceivedTexts(prev => [
           {
             content,
@@ -95,18 +95,18 @@ export default function FileTransfer() {
           ...prev
         ]);
         
-        showToast('已接收新消息');
+        showToast('New message received');
       } catch (error) {
-        console.error('处理接收文本失败:', error);
-        showToast('消息接收失败', true);
+        console.error('Failed to process received text:', error);
+        showToast('Message reception failed', true);
       }
     }
   };
   
-  // 发送数据
+  // Send data
   const sendData = (data: any): boolean => {
     if (!connection || connection.open === false) {
-      showToast('未连接，无法发送数据', true);
+      showToast('Not connected, unable to send data', true);
       return false;
     }
     
@@ -114,14 +114,14 @@ export default function FileTransfer() {
       connection.send(data);
       return true;
     } catch (error) {
-      console.error('发送数据失败:', error);
+      console.error('Failed to send data:', error);
       return false;
     }
   };
   
-  // 断开连接
+  // Disconnect
   const handleDisconnect = () => {
-    // 关闭连接
+    // Close connection
     if (connection) {
       connection.close();
     }
@@ -131,27 +131,27 @@ export default function FileTransfer() {
       peer.destroy();
     }
     
-    // 重置状态
+    // Reset state
     setConnectStep('connect');
     setReceivedFiles([]);
     setReceivedTexts([]);
     
-    // 显示通知
-    showToast('已断开连接');
+    // Show notification
+    showToast('Connection closed');
   };
   
-  // 在连接状态变化时更新步骤
+  // Update step when connection status changes
   useEffect(() => {
-    if (connectionStatus.includes('已连接')) {
+    if (connectionStatus.includes('Connected')) {
       setConnectStep('transfer');
     }
   }, [connectionStatus]);
   
-  // 在连接对象上添加数据处理
+  // Add data handler to connection object
   useEffect(() => {
     if (!connection) return;
     
-    // 处理接收到的数据
+    // Handle received data
     connection.on('data', handleReceivedData);
     
     return () => {
@@ -160,8 +160,8 @@ export default function FileTransfer() {
   }, [connection]);
   
   return (
-    <div className="container">
-      <h1>设备间传输</h1>
+    <div className="app-content">
+      <h1>TransferFiles</h1>
       
       {connectStep === 'connect' ? (
         <ConnectionPanel 

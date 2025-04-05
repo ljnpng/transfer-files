@@ -10,53 +10,53 @@ interface ConnectionPageProps {
 
 export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }: ConnectionPageProps) {
   const [peerIdInput, setPeerIdInput] = useState('');
-  const [copyBtnText, setCopyBtnText] = useState('复制');
+  const [copyBtnText, setCopyBtnText] = useState('Copy');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  // 复制Peer ID到剪贴板
+  // Copy Peer ID to clipboard
   const copyIdToClipboard = () => {
     navigator.clipboard.writeText(myPeerId)
       .then(() => {
-        setCopyBtnText('已复制');
+        setCopyBtnText('Copied');
         setIsCopied(true);
         setTimeout(() => {
-          setCopyBtnText('复制');
+          setCopyBtnText('Copy');
           setIsCopied(false);
         }, 2000);
       })
       .catch(err => {
-        console.error('复制失败:', err);
+        console.error('Copy failed:', err);
       });
   };
 
-  // 生成二维码
+  // Generate QR code
   useEffect(() => {
     if (!myPeerId || typeof window === 'undefined' || !qrcodeRef.current) return;
     
-    // 使用类型断言检查QRCode是否存在
+    // Use type assertion to check if QRCode exists
     const qrCode = (window as any).QRCode;
     if (!qrCode) return;
 
     try {
-      // 清空内容
+      // Clear previous content
       const context = qrcodeRef.current.getContext('2d');
       if (context) {
         context.clearRect(0, 0, qrcodeRef.current.width, qrcodeRef.current.height);
       }
       
-      // 获取当前URL的基础部分（不包含查询参数）
+      // Get the base URL
       const baseUrl = window.location.origin + window.location.pathname;
       const basePath = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
       
-      // 创建指向扫描页面的URL
+      // Create URL for the scan page
       const scanUrl = `${basePath}scan?connect=${myPeerId}`;
       
-      // 设置canvas大小
+      // Set canvas size
       qrcodeRef.current.width = 180;
       qrcodeRef.current.height = 180;
       
-      // 使用QRCode库生成二维码
+      // Generate QR code
       qrCode.toCanvas(qrcodeRef.current, scanUrl, {
         width: 180,
         margin: 1,
@@ -66,11 +66,11 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
         }
       }, function (error: Error | null) {
         if (error) {
-          console.error('QR Code 生成错误:', error);
+          console.error('QR Code generation error:', error);
         }
       });
     } catch (e) {
-      console.error('QR Code 生成异常:', e);
+      console.error('QR Code generation exception:', e);
     }
   }, [myPeerId]);
 
@@ -86,29 +86,29 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
     }
   };
 
-  // 生成连接状态的类名
+  // Generate status class name
   const getStatusClassName = () => {
-    if (connectionStatus.includes('已连接')) return 'status-connected';
-    if (connectionStatus.includes('错误') || connectionStatus.includes('失败')) return 'status-error';
-    if (connectionStatus.includes('正在连接')) return 'status-connecting';
+    if (connectionStatus.includes('Connected')) return 'status-connected';
+    if (connectionStatus.includes('Error') || connectionStatus.includes('Failed')) return 'status-error';
+    if (connectionStatus.includes('Connecting')) return 'status-connecting';
     return '';
   };
 
   return (
     <div className="connection-panel">
       <div className="connection-info">
-        <h2 className="connection-header">第一步：建立连接</h2>
+        <h2 className="connection-header">Step 1: Establish Connection</h2>
         <div className="connection-guide">
-          与另一台设备建立连接后，您将能够发送或接收文件和文本
+          Connect with another device to send or receive files and text messages
         </div>
         
         <div className="connection-methods">
           <div className="id-section">
-            <div className="section-label">方式一：使用ID连接</div>
+            <div className="section-label">Option 1: Connect with ID</div>
             <div className="my-id-container">
-              <div className="my-id-label">我的ID:</div>
+              <div className="my-id-label">My ID:</div>
               <div className={`my-id-value ${isCopied ? 'copied' : ''}`}>
-                <span id="my-id">{myPeerId || "等待生成..."}</span>
+                <span id="my-id">{myPeerId || "Generating..."}</span>
                 <button 
                   id="copy-id" 
                   className={`btn-small ${isCopied ? 'copied' : ''}`} 
@@ -122,27 +122,27 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
               <input 
                 type="text" 
                 id="peer-id" 
-                placeholder="输入对方ID" 
+                placeholder="Enter remote ID" 
                 value={peerIdInput}
                 onChange={(e) => setPeerIdInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
-              <button id="connect-btn" className="btn" onClick={handleConnect}>连接</button>
+              <button id="connect-btn" className="btn" onClick={handleConnect}>Connect</button>
             </div>
           </div>
           
           <div className="or-divider">
-            <span>或</span>
+            <span>or</span>
           </div>
           
           <div className="qr-section">
-            <div className="section-label">方式二：扫描二维码连接</div>
+            <div className="section-label">Option 2: Scan QR Code</div>
             <div id="qr-container">
               <canvas id="qrcode" ref={qrcodeRef}></canvas>
               <div id="share-url" className="share-url">
-                <small>分享链接: 
+                <small>Share link: 
                   <a href={`/scan?connect=${myPeerId}`} target="_blank" title={myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : ''}>
-                    {myPeerId ? '点击查看' : '等待生成...'}
+                    {myPeerId ? 'View link' : 'Generating...'}
                   </a>
                 </small>
               </div>
@@ -153,7 +153,7 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
       
       <div className={`status-indicator ${getStatusClassName()}`}>
         <div className="status-icon"></div>
-        <p>状态: <span id="connection-status">{connectionStatus}</span></p>
+        <p>Status: <span id="connection-status">{connectionStatus}</span></p>
       </div>
     </div>
   );

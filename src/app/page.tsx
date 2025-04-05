@@ -4,6 +4,7 @@ import { useState } from 'react';
 import ConnectionPage from '@/components/ConnectionPage';
 import TransferPage from '@/components/TransferPage';
 import usePeerConnection from '@/hooks/usePeerConnection';
+import FileTransfer from "@/components/FileTransfer";
 
 export default function Home() {
   // 处理接收的数据
@@ -46,26 +47,8 @@ export default function Home() {
   });
 
   return (
-    <main>
-      <h1>设备间传输</h1>
-      
-      {!connected ? (
-        // 未连接时显示连接页面
-        <ConnectionPage 
-          myPeerId={myPeerId}
-          connectionStatus={connectionStatus}
-          onConnect={connectToPeer}
-        />
-      ) : (
-        // 已连接时显示传输页面
-        <TransferPage
-          connectionStatus={connectionStatus}
-          onReceivedData={handleReceivedData}
-          sendData={sendData}
-          receivedFiles={receivedFiles}
-          receivedTexts={receivedTexts}
-        />
-      )}
+    <main className="app-content">
+      <FileTransfer />
     </main>
   );
 } 
