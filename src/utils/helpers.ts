@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * 格式化文件大小
- * @param bytes 文件大小（字节）
- * @returns 格式化后的字符串
+ * Format file size
+ * @param bytes File size in bytes
+ * @returns Formatted string
  */
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
@@ -13,32 +13,32 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
- * 显示提示消息
- * @param message 消息内容
- * @param isError 是否为错误消息
+ * Show toast message
+ * @param message Message content
+ * @param isError Whether it's an error message
  */
 export function showToast(message: string, isError: boolean = false): void {
-  // 检查是否已有toast元素，如果有则移除
+  // Check if a toast element already exists and remove it
   const existingToast = document.getElementById('toast-message');
   if (existingToast) {
     existingToast.remove();
   }
   
-  // 创建新的toast元素
+  // Create new toast element
   const toast = document.createElement('div');
   toast.id = 'toast-message';
   toast.className = isError ? 'toast error' : 'toast';
   toast.textContent = message;
   
-  // 添加到body
+  // Add to body
   document.body.appendChild(toast);
   
-  // 显示动画
+  // Show animation
   setTimeout(() => {
     toast.classList.add('show');
   }, 10);
   
-  // 2秒后自动隐藏
+  // Hide automatically after 2 seconds
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => {

@@ -14,7 +14,7 @@ export default function BlogPage() {
         const blogs = await getAllBlogs();
         setAllBlogsData(blogs);
       } catch (error) {
-        console.error("获取博客数据失败:", error);
+        console.error("Failed to fetch blog data:", error);
       } finally {
         setLoading(false);
       }

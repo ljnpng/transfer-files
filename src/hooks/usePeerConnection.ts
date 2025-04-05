@@ -12,12 +12,12 @@ interface PeerConnectionOptions {
 export default function usePeerConnection(options: PeerConnectionOptions = {}) {
   const [myPeerId, setMyPeerId] = useState<string>('');
   const [connection, setConnection] = useState<any>(null);
-  const [connectionStatus, setConnectionStatus] = useState<string>('未连接');
+  const [connectionStatus, setConnectionStatus] = useState<string>('Not connected');
   const peerRef = useRef<any>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [peerLoaded, setPeerLoaded] = useState<boolean>(false);
 
-  // 检查 Peer 库是否已加载
+  // Check if Peer library is loaded
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -40,14 +40,14 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     }
   }, []);
 
-  // 初始化PeerJS
+  // Initialize PeerJS
   useEffect(() => {
-    // 客户端环境检查 且 确保 Peer 已加载
+    // Check client environment and ensure Peer is loaded
     if (typeof window === 'undefined' || !peerLoaded) return;
 
     try {
       const Peer = window.Peer;
-      // 添加PeerJS配置，包含多个STUN/TURN服务器
+      // Add PeerJS configuration with multiple STUN/TURN servers
       const peer = new Peer({
         config: {
           iceServers: [
@@ -61,7 +61,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
           ],
           iceCandidatePoolSize: 10,
         },
-        debug: 2 // 增加调试信息级别
+        debug: 2 // Increase debug information level
       });
       peerRef.current = peer;
 
@@ -72,35 +72,35 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       });
 
       peer.on('connection', (conn: any) => {
-        console.log('收到连接请求:', conn.peer);
+        console.log('Connection request received:', conn.peer);
         setupConnection(conn);
-        setConnectionStatus(`已连接到 ${conn.peer}`);
+        setConnectionStatus(`Connected to ${conn.peer}`);
       });
 
       peer.on('error', (error: any) => {
-        console.error('Peer连接错误:', error);
-        let errorMsg = '连接错误';
+        console.error('Peer connection error:', error);
+        let errorMsg = 'Connection error';
         
-        // 提供更具体的错误信息
+        // Provide more specific error messages
         if (error.type === 'peer-unavailable') {
-          errorMsg = '对方设备不可用';
+          errorMsg = 'Remote device unavailable';
         } else if (error.type === 'network') {
-          errorMsg = '网络连接问题';
+          errorMsg = 'Network connection issue';
         } else if (error.type === 'disconnected') {
-          errorMsg = '已从服务器断开';
+          errorMsg = 'Disconnected from server';
         } else if (error.type === 'server-error') {
-          errorMsg = '服务器错误';
+          errorMsg = 'Server error';
         }
         
         setConnectionStatus(errorMsg);
       });
 
-      // 添加额外处理
+      // Add additional handling
       peer.on('disconnected', () => {
         console.log('Disconnected from PeerJS server, attempting to reconnect...');
         setConnectionStatus('Connection lost, attempting to reconnect...');
         
-        // 尝试重新连接到服务器
+        // Attempt to reconnect to the server
         peer.reconnect();
       });
 
@@ -111,15 +111,15 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
         }
       };
     } catch (err) {
-      console.error('初始化 PeerJS 失败:', err);
-      setConnectionStatus('初始化失败');
+      console.error('PeerJS initialization failed:', err);
+      setConnectionStatus('Initialization failed');
     }
   }, [peerLoaded]);
 
-  // 连接到对等方
+  // Connect to peer
   const connectToPeer = useCallback((peerId: string) => {
     if (!peerRef.current) {
-      console.error('Peer 未初始化');
+      console.error('Peer not initialized');
       return;
     }
     
@@ -131,11 +131,11 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     setupConnection(conn);
   }, []);
 
-  // 设置连接
+  // Setup connection
   const setupConnection = useCallback((conn: any) => {
     setConnection(conn);
     
-    console.log('设置连接:', conn.peer);
+    console.log('Setting up connection:', conn.peer);
     
     conn.on('open', () => {
       console.log('Connection opened:', conn.peer);
@@ -145,34 +145,34 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     });
     
     conn.on('data', (data: any) => {
-      console.log('收到数据类型:', data?.type);
+      console.log('Received data type:', data?.type);
       if (options.onData) options.onData(data);
     });
     
     conn.on('close', () => {
-      console.log('连接已关闭');
-      setConnectionStatus('连接已关闭');
+      console.log('Connection closed');
+      setConnectionStatus('Connection closed');
       setConnected(false);
       setConnection(null);
       if (options.onConnectionClose) options.onConnectionClose();
     });
     
     conn.on('error', (error: any) => {
-      console.error('连接错误:', error);
-      setConnectionStatus('连接出错');
+      console.error('Connection error:', error);
+      setConnectionStatus('Connection error');
       if (options.onConnectionError) options.onConnectionError(error);
     });
     
-    // 增加连接超时处理
+    // Add connection timeout handling
     setTimeout(() => {
       if (conn.open === false) {
-        console.log('连接超时未建立');
-        setConnectionStatus('连接超时，请重试');
+        console.log('Connection timed out');
+        setConnectionStatus('Connection timed out, please try again');
       }
-    }, 20000); // 20秒超时
+    }, 20000); // 20 seconds timeout
   }, [options]);
 
-  // 发送数据
+  // Send data
   const sendData = useCallback((data: any) => {
     if (connection) {
       connection.send(data);
@@ -181,7 +181,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     return false;
   }, [connection]);
 
-  // 处理URL中的连接参数
+  // Handle connection parameters in URL
   useEffect(() => {
     if (typeof window === 'undefined' || !myPeerId) return;
     
@@ -192,7 +192,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       if (connectId && myPeerId) {
         connectToPeer(connectId);
         
-        // 清除URL参数，防止刷新页面时重复连接
+        // Clear URL parameters to prevent reconnection on page refresh
         const newUrl = window.location.pathname;
         window.history.pushState({}, document.title, newUrl);
       }

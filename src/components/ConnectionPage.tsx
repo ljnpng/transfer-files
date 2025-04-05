@@ -99,7 +99,7 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
       <div className="connection-info">
         <h2 className="connection-header">Step 1: Establish Connection</h2>
         <div className="connection-guide">
-          Connect with another device to send or receive files and text messages
+          Connect with another device to send or receive files and text messages. No installation required.
         </div>
         
         <div className="connection-methods">

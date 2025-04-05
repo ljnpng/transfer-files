@@ -10,46 +10,46 @@ interface ConnectionPanelProps {
 
 export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect }: ConnectionPanelProps) {
   const [peerIdInput, setPeerIdInput] = useState('');
-  const [copyBtnText, setCopyBtnText] = useState('复制');
+  const [copyBtnText, setCopyBtnText] = useState('Copy');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
 
-  // 复制Peer ID到剪贴板
+  // Copy Peer ID to clipboard
   const copyIdToClipboard = () => {
     navigator.clipboard.writeText(myPeerId)
       .then(() => {
-        setCopyBtnText('已复制');
+        setCopyBtnText('Copied');
         setTimeout(() => {
-          setCopyBtnText('复制');
+          setCopyBtnText('Copy');
         }, 2000);
       })
       .catch(err => {
-        console.error('复制失败:', err);
+        console.error('Copy failed:', err);
       });
   };
 
-  // 生成二维码
+  // Generate QR code
   useEffect(() => {
     if (!myPeerId || typeof window === 'undefined' || !window.QRCode || !qrcodeRef.current) return;
 
     try {
-      // 清空内容
+      // Clear content
       const context = qrcodeRef.current.getContext('2d');
       if (context) {
         context.clearRect(0, 0, qrcodeRef.current.width, qrcodeRef.current.height);
       }
       
-      // 获取当前URL的基础部分（不包含查询参数）
+      // Get base URL part (without query parameters)
       const baseUrl = window.location.origin + window.location.pathname;
       const basePath = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
       
-      // 创建指向扫描页面的URL
+      // Create URL pointing to scan page
       const scanUrl = `${basePath}scan?connect=${myPeerId}`;
       
-      // 设置canvas大小
+      // Set canvas size
       qrcodeRef.current.width = 150;
       qrcodeRef.current.height = 150;
       
-      // 使用QRCode库生成二维码
+      // Generate QR code using QRCode library
       window.QRCode.toCanvas(qrcodeRef.current, scanUrl, {
         width: 150,
         margin: 1,
@@ -59,11 +59,11 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
         }
       }, function (error: Error | null) {
         if (error) {
-          console.error('QR Code 生成错误:', error);
+          console.error('QR Code generation error:', error);
         }
       });
     } catch (e) {
-      console.error('QR Code 生成异常:', e);
+      console.error('QR Code generation exception:', e);
     }
   }, [myPeerId]);
 
@@ -82,9 +82,9 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
   return (
     <div className="connection-panel">
       <div className="connection-info">
-        <h2>连接设置</h2>
+        <h2>Connection Setup</h2>
         <div className="id-section">
-          <p>我的ID: <span id="my-id">{myPeerId || "等待生成..."}</span> 
+          <p>My ID: <span id="my-id">{myPeerId || "Generating..."}</span> 
             <button id="copy-id" className="btn-small" onClick={copyIdToClipboard}>{copyBtnText}</button>
           </p>
         </div>
@@ -92,25 +92,25 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
           <input 
             type="text" 
             id="peer-id" 
-            placeholder="输入对方ID" 
+            placeholder="Enter peer ID" 
             value={peerIdInput}
             onChange={(e) => setPeerIdInput(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <button id="connect-btn" className="btn" onClick={handleConnect}>连接</button>
+          <button id="connect-btn" className="btn" onClick={handleConnect}>Connect</button>
         </div>
         <div id="qr-container">
-          <h3>扫描二维码连接</h3>
+          <h3>Scan QR Code to Connect</h3>
           <canvas id="qrcode" ref={qrcodeRef}></canvas>
           <div id="share-url" className="share-url">
-            <small>或分享链接: <a href={`/scan?connect=${myPeerId}`} target="_blank">
-              {myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : '等待生成...'}
+            <small>Or share link: <a href={`/scan?connect=${myPeerId}`} target="_blank">
+              {myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : 'Generating...'}
             </a></small>
           </div>
         </div>
       </div>
       <div className="status">
-        <p>状态: <span id="connection-status">{connectionStatus}</span></p>
+        <p>Status: <span id="connection-status">{connectionStatus}</span></p>
       </div>
     </div>
   );

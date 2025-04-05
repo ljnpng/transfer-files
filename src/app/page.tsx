@@ -7,14 +7,14 @@ import usePeerConnection from '@/hooks/usePeerConnection';
 import FileTransfer from "@/components/FileTransfer";
 
 export default function Home() {
-  // 处理接收的数据
+  // Handle received data
   const [receivedFiles, setReceivedFiles] = useState<any[]>([]);
   const [receivedTexts, setReceivedTexts] = useState<any[]>([]);
 
-  // 处理接收到的数据
+  // Process received data
   function handleReceivedData(data: any) {
     if (data.type === 'file') {
-      // 接收文件
+      // Receive file
       const blob = new Blob([data.data], { type: data.dataType });
       const url = URL.createObjectURL(blob);
       
@@ -26,7 +26,7 @@ export default function Home() {
         id: Date.now().toString()
       }]);
     } else if (data.type === 'text') {
-      // 接收文本
+      // Receive text
       setReceivedTexts(prev => [...prev, {
         content: data.content,
         timestamp: new Date(data.timestamp).toLocaleString(),

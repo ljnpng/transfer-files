@@ -6,26 +6,26 @@ import matter from 'gray-matter';
 import { remark } from 'remark';
 import html from 'remark-html';
 
-// 博客文章目录路径
+// Path to blog posts directory
 const blogsDirectory = path.join(process.cwd(), 'src/data/blogs');
 
-// 获取所有博客文章的数据
+// Get data for all blog posts
 export async function getAllBlogs() {
-  // 获取blogs目录下的所有文件名
+  // Get all file names in the blogs directory
   const fileNames = fs.readdirSync(blogsDirectory);
   
-  // 获取所有博客数据
+  // Get all blog data
   const allBlogsData = fileNames
-    .filter(fileName => fileName.endsWith('.md')) // 只处理markdown文件
+    .filter(fileName => fileName.endsWith('.md')) // Only process markdown files
     .map(fileName => {
-      // 读取markdown文件
+      // Read markdown file
       const fullPath = path.join(blogsDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, 'utf8');
       
-      // 使用gray-matter解析文件的前言数据
+      // Parse front matter data with gray-matter
       const matterResult = matter(fileContents);
       
-      // 结合数据与文件名
+      // Combine data with file name
       return {
         slug: matterResult.data.slug || fileName.replace(/\.md$/, ''),
         title: matterResult.data.title,
@@ -34,7 +34,7 @@ export async function getAllBlogs() {
         author: matterResult.data.author,
       };
     })
-    // 按日期排序
+    // Sort by date
     .sort((a, b) => {
       if (a.date < b.date) {
         return 1;
@@ -46,18 +46,18 @@ export async function getAllBlogs() {
   return allBlogsData;
 }
 
-// 获取所有博客的slug列表
+// Get list of all blog slugs
 export async function getAllBlogSlugs() {
   const fileNames = fs.readdirSync(blogsDirectory);
   
   return fileNames
     .filter(fileName => fileName.endsWith('.md'))
     .map(fileName => {
-      // 读取markdown文件
+      // Read markdown file
       const fullPath = path.join(blogsDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, 'utf8');
       
-      // 使用gray-matter解析文件的前言数据
+      // Parse front matter data with gray-matter
       const matterResult = matter(fileContents);
       
       return {
@@ -68,12 +68,12 @@ export async function getAllBlogSlugs() {
     });
 }
 
-// 根据slug获取博客内容
+// Get blog content by slug
 export async function getBlogData(slug: string) {
   const fileNames = fs.readdirSync(blogsDirectory);
   let fullPath = '';
   
-  // 查找匹配的文件
+  // Find matching file
   for (const fileName of fileNames) {
     if (!fileName.endsWith('.md')) continue;
     
@@ -91,19 +91,19 @@ export async function getBlogData(slug: string) {
     throw new Error(`Blog with slug ${slug} not found`);
   }
   
-  // 读取markdown文件
+  // Read markdown file
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   
-  // 使用gray-matter解析文件的前言数据
+  // Parse front matter data with gray-matter
   const matterResult = matter(fileContents);
   
-  // 将markdown内容转换为HTML
+  // Convert markdown content to HTML
   const processedContent = await remark()
     .use(html)
     .process(matterResult.content);
   const contentHtml = processedContent.toString();
   
-  // 结合数据
+  // Combine data
   return {
     slug,
     contentHtml,
