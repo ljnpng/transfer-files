@@ -16,21 +16,6 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
   const peerRef = useRef<any>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [peerLoaded, setPeerLoaded] = useState<boolean>(false);
-
-  // 生成更复杂的随机 ID，减少冲突可能性
-  const generateRandomId = () => {
-    // 生成16个随机字符（更长更复杂）
-    const randomPart = Array.from(
-      { length: 16 },
-      () => Math.floor(Math.random() * 36).toString(36)
-    ).join('');
-    
-    // 添加时间戳前缀进一步减少冲突
-    return `tf-${Date.now().toString(36)}-${randomPart}`;
-  }
-
-  // 存储随机ID以便在重连时使用
-  const randomIdRef = useRef<string>(generateRandomId());
   // 存储尝试重连次数，避免无限重连
   const reconnectAttempts = useRef<number>(0);
   // 存储handleDisconnect函数的引用
@@ -121,7 +106,6 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     reconnectAttempts.current += 1;
     
     // 使用指数退避策略计算等待时间，重试次数越多，等待时间越长
-    // 1次：2秒, 2次：4秒, 3次：8秒...
     const backoffTime = Math.min(2000 * Math.pow(2, attempt), 10000);
     
     console.log(`Reconnection attempt ${attempt + 1}, waiting ${backoffTime/1000} seconds...`);
@@ -142,7 +126,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       const oldPeer = peerRef.current;
       oldPeer.destroy();
       
-      // 等待一段时间确保旧连接完全关闭，使用指数退避
+      // 等待一段时间确保旧连接完全关闭
       setTimeout(() => {
         try {
           const Peer = window.Peer;
@@ -151,13 +135,8 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
             return;
           }
           
-          // 生成一个新的随机ID，更加复杂且包含时间戳
-          const newRandomId = generateRandomId();
-          randomIdRef.current = newRandomId;
-          
-          console.log(`Creating new peer with ID: ${newRandomId}`);
-          
-          const newPeer = new Peer(newRandomId, {
+          // 不指定ID，让服务器生成
+          const newPeer = new Peer({
             config: {
               iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -276,11 +255,9 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
 
     try {
       const Peer = window.Peer;
-      // 使用已保存的随机ID
-      const randomId = randomIdRef.current;
       
-      // Add PeerJS configuration with multiple STUN/TURN servers
-      const peer = new Peer(randomId, {
+      // 使用原始方式初始化 Peer，不指定 ID 让服务器自动生成
+      const peer = new Peer({
         config: {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
