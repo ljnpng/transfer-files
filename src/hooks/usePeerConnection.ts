@@ -16,12 +16,27 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
   const peerRef = useRef<any>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [peerLoaded, setPeerLoaded] = useState<boolean>(false);
+
+  // 生成更复杂的随机 ID，减少冲突可能性
+  const generateRandomId = () => {
+    // 生成16个随机字符（更长更复杂）
+    const randomPart = Array.from(
+      { length: 16 },
+      () => Math.floor(Math.random() * 36).toString(36)
+    ).join('');
+    
+    // 添加时间戳前缀进一步减少冲突
+    return `tf-${Date.now().toString(36)}-${randomPart}`;
+  }
+
   // 存储随机ID以便在重连时使用
-  const randomIdRef = useRef<string>(`tf-${Math.random().toString(36).substr(2, 9)}`);
+  const randomIdRef = useRef<string>(generateRandomId());
   // 存储尝试重连次数，避免无限重连
   const reconnectAttempts = useRef<number>(0);
   // 存储handleDisconnect函数的引用
   const handleDisconnectRef = useRef<any>(null);
+  // 存储setupConnection函数的引用
+  const setupConnectionRef = useRef<any>(null);
 
   // Setup connection
   const setupConnection = useCallback((conn: any) => {
@@ -64,6 +79,11 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     }, 20000); // 20 seconds timeout
   }, [options]);
 
+  // 保存setupConnection函数的引用
+  useEffect(() => {
+    setupConnectionRef.current = setupConnection;
+  }, [setupConnection]);
+
   // Connect to peer
   const connectToPeer = useCallback((peerId: string) => {
     if (!peerRef.current) {
@@ -76,7 +96,11 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       reliable: true
     });
     
-    setupConnection(conn);
+    if (setupConnectionRef.current) {
+      setupConnectionRef.current(conn);
+    } else {
+      setupConnection(conn);
+    }
   }, [setupConnection]);
 
   // 处理断开连接的函数
@@ -93,7 +117,15 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       return;
     }
     
+    const attempt = reconnectAttempts.current;
     reconnectAttempts.current += 1;
+    
+    // 使用指数退避策略计算等待时间，重试次数越多，等待时间越长
+    // 1次：2秒, 2次：4秒, 3次：8秒...
+    const backoffTime = Math.min(2000 * Math.pow(2, attempt), 10000);
+    
+    console.log(`Reconnection attempt ${attempt + 1}, waiting ${backoffTime/1000} seconds...`);
+    setConnectionStatus(`Connection lost, retrying in ${backoffTime/1000} seconds...`);
     
     // 尝试使用内置的重连方法
     if (typeof peerRef.current.reconnect === 'function') {
@@ -110,7 +142,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       const oldPeer = peerRef.current;
       oldPeer.destroy();
       
-      // 等待一小段时间确保旧连接完全关闭
+      // 等待一段时间确保旧连接完全关闭，使用指数退避
       setTimeout(() => {
         try {
           const Peer = window.Peer;
@@ -119,9 +151,11 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
             return;
           }
           
-          // 生成一个新的随机ID，而不是重用之前的ID
-          const newRandomId = `tf-${Math.random().toString(36).substr(2, 9)}`;
+          // 生成一个新的随机ID，更加复杂且包含时间戳
+          const newRandomId = generateRandomId();
           randomIdRef.current = newRandomId;
+          
+          console.log(`Creating new peer with ID: ${newRandomId}`);
           
           const newPeer = new Peer(newRandomId, {
             config: {
@@ -149,7 +183,10 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
           
           newPeer.on('connection', (conn: any) => {
             console.log('Connection request received after reconnect:', conn.peer);
-            setupConnection(conn);
+            // 使用ref存储的setupConnection函数
+            if (setupConnectionRef.current) {
+              setupConnectionRef.current(conn);
+            }
             setConnectionStatus(`Connected to ${conn.peer}`);
           });
           
@@ -178,12 +215,12 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
           console.error('Failed to create new peer connection inside timeout:', err);
           setConnectionStatus('Reconnection failed');
         }
-      }, 1000); // Wait for the old connection to close before creating a new one
+      }, backoffTime); // Wait for the old connection to close before creating a new one
     } catch (err) {
       console.error('Failed to create new peer connection:', err);
       setConnectionStatus('Reconnection failed');
     }
-  }, [setupConnection]);
+  }, []);
 
   // 保存handleDisconnect函数的引用以避免循环依赖
   useEffect(() => {
@@ -268,7 +305,11 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
 
       peer.on('connection', (conn: any) => {
         console.log('Connection request received:', conn.peer);
-        setupConnection(conn);
+        if (setupConnectionRef.current) {
+          setupConnectionRef.current(conn);
+        } else {
+          setupConnection(conn);
+        }
         setConnectionStatus(`Connected to ${conn.peer}`);
       });
 
