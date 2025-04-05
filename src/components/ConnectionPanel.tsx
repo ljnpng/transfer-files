@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 
 interface ConnectionPanelProps {
   myPeerId: string;
@@ -13,59 +14,30 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
   const [copyBtnText, setCopyBtnText] = useState('Copy');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
 
-  // Copy Peer ID to clipboard
-  const copyIdToClipboard = () => {
-    navigator.clipboard.writeText(myPeerId)
-      .then(() => {
-        setCopyBtnText('Copied');
-        setTimeout(() => {
-          setCopyBtnText('Copy');
-        }, 2000);
-      })
-      .catch(err => {
-        console.error('Copy failed:', err);
-      });
-  };
-
-  // Generate QR code
+  // 生成QR码
   useEffect(() => {
-    if (!myPeerId || typeof window === 'undefined' || !window.QRCode || !qrcodeRef.current) return;
-
-    try {
-      // Clear content
-      const context = qrcodeRef.current.getContext('2d');
-      if (context) {
-        context.clearRect(0, 0, qrcodeRef.current.width, qrcodeRef.current.height);
-      }
-      
-      // Get base URL part (without query parameters)
-      const baseUrl = window.location.origin + window.location.pathname;
-      const basePath = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
-      
-      // Create URL pointing to scan page
-      const scanUrl = `${basePath}scan?connect=${myPeerId}`;
-      
-      // Set canvas size
-      qrcodeRef.current.width = 150;
-      qrcodeRef.current.height = 150;
-      
-      // Generate QR code using QRCode library
-      window.QRCode.toCanvas(qrcodeRef.current, scanUrl, {
-        width: 150,
-        margin: 1,
+    if (myPeerId && qrcodeRef.current) {
+      const scanUrl = `${window.location.origin}/scan?connect=${myPeerId}`;
+      QRCode.toCanvas(qrcodeRef.current, scanUrl, {
+        width: 180,
+        margin: 2,
         color: {
           dark: '#3498db',
           light: '#ffffff'
         }
-      }, function (error: Error | null) {
-        if (error) {
-          console.error('QR Code generation error:', error);
-        }
       });
-    } catch (e) {
-      console.error('QR Code generation exception:', e);
     }
   }, [myPeerId]);
+
+  // 复制ID到剪贴板
+  const copyIdToClipboard = () => {
+    if (myPeerId) {
+      navigator.clipboard.writeText(myPeerId).then(() => {
+        setCopyBtnText('Copied!');
+        setTimeout(() => setCopyBtnText('Copy'), 2000);
+      });
+    }
+  };
 
   const handleConnect = () => {
     if (peerIdInput.trim()) {
@@ -81,36 +53,51 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
 
   return (
     <div className="connection-panel">
-      <div className="connection-info">
-        <h2>Connection Setup</h2>
-        <div className="id-section">
-          <p>My ID: <span id="my-id">{myPeerId || "Generating..."}</span> 
-            <button id="copy-id" className="btn-small" onClick={copyIdToClipboard}>{copyBtnText}</button>
-          </p>
-        </div>
-        <div className="connect-section">
-          <input 
-            type="text" 
-            id="peer-id" 
-            placeholder="Enter peer ID" 
-            value={peerIdInput}
-            onChange={(e) => setPeerIdInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <button id="connect-btn" className="btn" onClick={handleConnect}>Connect</button>
-        </div>
-        <div id="qr-container">
-          <h3>Scan QR Code to Connect</h3>
-          <canvas id="qrcode" ref={qrcodeRef}></canvas>
-          <div id="share-url" className="share-url">
-            <small>Or share link: <a href={`/scan?connect=${myPeerId}`} target="_blank">
-              {myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : 'Generating...'}
-            </a></small>
-          </div>
+      <h2>Connection Setup</h2>
+      
+      <div className="my-id-container">
+        <div className="my-id-label">My ID: </div>
+        <div className="my-id-value">
+          <span>{myPeerId || "Generating..."}</span>
+          <button 
+            className="btn-small" 
+            onClick={copyIdToClipboard}
+          >
+            {copyBtnText}
+          </button>
         </div>
       </div>
-      <div className="status">
-        <p>Status: <span id="connection-status">{connectionStatus}</span></p>
+      
+      <div className="connect-section">
+        <input 
+          type="text" 
+          placeholder="Enter peer ID" 
+          value={peerIdInput}
+          onChange={(e) => setPeerIdInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button className="btn" onClick={handleConnect}>Connect</button>
+      </div>
+      
+      <div className="or-divider">
+        <span>OR</span>
+      </div>
+      
+      <div id="qr-container">
+        <h3>Scan QR Code to Connect</h3>
+        <canvas id="qrcode" ref={qrcodeRef}></canvas>
+        <div className="share-url">
+          Or share link: <a href={`/scan?connect=${myPeerId}`} target="_blank">
+            {myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : 'Generating...'}
+          </a>
+        </div>
+      </div>
+      
+      <div className={`status-indicator ${connectionStatus.includes('Connected') ? 'status-connected' : 
+                                       connectionStatus.includes('Connecting') ? 'status-connecting' : 
+                                       connectionStatus.includes('Error') ? 'status-error' : ''}`}>
+        <div className="status-icon"></div>
+        <div>Status: {connectionStatus}</div>
       </div>
     </div>
   );
