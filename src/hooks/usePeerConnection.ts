@@ -323,7 +323,7 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
       console.error('PeerJS initialization failed:', err);
       setConnectionStatus('Initialization failed');
     }
-  }, [peerLoaded, setupConnection]);
+  }, [peerLoaded]);
 
   // Handle connection parameters in URL
   useEffect(() => {
