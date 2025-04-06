@@ -126,6 +126,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Support the Project
+
+If you find TransferFiles useful, please consider supporting the project:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/CoderLim)
+
 ## Acknowledgments
 
 - [PeerJS](https://peerjs.com/) for WebRTC implementation
