@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import FriendLinks from './FriendLinks';
 
 export default function Footer() {
   return (
@@ -44,11 +45,7 @@ export default function Footer() {
           
           <div className="footer-section">
             <h3>Friends</h3>
-            <ul className="footer-links">
-              <li>
-                <a href="http://mp3cutter.pro/" target="_blank" rel="noopener noreferrer">MP3 Cutter</a>
-              </li>
-            </ul>
+            <FriendLinks />
           </div>
         </div>
         
