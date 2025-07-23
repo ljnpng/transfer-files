@@ -13,6 +13,8 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
   const [copyBtnText, setCopyBtnText] = useState('Copy');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [copyLinkText, setCopyLinkText] = useState('Copy Link');
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
 
   // Copy Peer ID to clipboard
   const copyIdToClipboard = () => {
@@ -27,6 +29,28 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
       })
       .catch(err => {
         console.error('Copy failed:', err);
+      });
+  };
+
+  // Copy connection link to clipboard
+  const copyLinkToClipboard = () => {
+    if (!myPeerId) return;
+    
+    const baseUrl = window.location.origin + window.location.pathname;
+    const basePath = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
+    const scanUrl = `${basePath}scan?connect=${myPeerId}`;
+    
+    navigator.clipboard.writeText(scanUrl)
+      .then(() => {
+        setCopyLinkText('Copied!');
+        setIsLinkCopied(true);
+        setTimeout(() => {
+          setCopyLinkText('Copy Link');
+          setIsLinkCopied(false);
+        }, 2000);
+      })
+      .catch(err => {
+        console.error('Copy link failed:', err);
       });
   };
 
@@ -139,12 +163,22 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
             <div className="section-label">Option 2: Scan QR Code</div>
             <div id="qr-container">
               <canvas id="qrcode" ref={qrcodeRef}></canvas>
-              <div id="share-url" className="share-url">
-                <small>Share link: 
-                  <a href={`/scan?connect=${myPeerId}`} target="_blank" title={myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : ''}>
-                    {myPeerId ? 'View link' : 'Generating...'}
-                  </a>
-                </small>
+              <div className="share-options">
+                <div id="share-url" className="share-url">
+                  <small>Share link: 
+                    <a href={`/scan?connect=${myPeerId}`} target="_blank" title={myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : ''}>
+                      {myPeerId ? 'View link' : 'Generating...'}
+                    </a>
+                  </small>
+                </div>
+                <button 
+                  className={`btn-small copy-link ${isLinkCopied ? 'copied' : ''}`}
+                  onClick={copyLinkToClipboard}
+                  disabled={!myPeerId}
+                  title="Copy connection link"
+                >
+                  {copyLinkText}
+                </button>
               </div>
             </div>
           </div>

@@ -443,6 +443,20 @@ body {
   transform: scale(0.95);
 }
 
+.btn-small.copied {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34C759;
+  border-color: rgba(52, 199, 89, 0.4);
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2);
+}
+
+.btn-small.copied:hover {
+  background: rgba(52, 199, 89, 0.2);
+  color: #30D158;
+  transform: scale(1.02);
+}
+
 .btn-secondary {
   background: rgba(255, 255, 255, 0.3);
   color: var(--text-primary);
@@ -613,19 +627,74 @@ textarea::placeholder {
   transform: translateY(-1px);
 }
 
+.share-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-top: 16px;
+}
+
+.copy-link {
+  background: rgba(249, 215, 28, 0.15);
+  color: #D4AF00;
+  border: 1px solid rgba(249, 215, 28, 0.3);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-medium);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  min-width: 100px;
+}
+
+.copy-link:hover:not(:disabled) {
+  background: rgba(249, 215, 28, 0.25);
+  border-color: rgba(249, 215, 28, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 215, 28, 0.2);
+}
+
+.copy-link:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.copy-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.copy-link.copied {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34C759;
+  border-color: rgba(52, 199, 89, 0.4);
+  transform: scale(1.02);
+}
+
+.copy-link.copied:hover {
+  background: rgba(52, 199, 89, 0.25);
+  color: #30D158;
+}
+
 /* Status Indicator */
 .status-indicator {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-lg);
-  background: var(--bg-glass);
-  border: 1px solid var(--glass-border);
+  background: linear-gradient(135deg, rgba(249, 215, 28, 0.15) 0%, rgba(255, 255, 255, 0.9) 50%, rgba(249, 215, 28, 0.1) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(249, 215, 28, 0.3);
   border-radius: var(--radius-lg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   margin-top: var(--spacing-xl);
   transition: all var(--transition-medium);
+  box-shadow: 0 4px 20px rgba(249, 215, 28, 0.15), 0 2px 8px rgba(0, 0, 0, 0.04);
+  color: #1f2937;
+  font-weight: var(--font-weight-medium);
 }
 
 .status-icon {
@@ -641,13 +710,15 @@ textarea::placeholder {
 }
 
 .status-connected {
-  background: rgba(52, 199, 89, 0.1);
-  border-color: var(--secondary-color);
+  background: linear-gradient(135deg, rgba(249, 215, 28, 0.2) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(249, 215, 28, 0.15) 100%);
+  border-color: #F9D71C;
+  box-shadow: 0 4px 20px rgba(249, 215, 28, 0.25), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .status-connected .status-icon {
-  background: var(--secondary-color);
+  background: #F9D71C;
   animation: none;
+  box-shadow: 0 0 8px rgba(249, 215, 28, 0.4);
 }
 
 .status-error {
@@ -683,17 +754,21 @@ textarea::placeholder {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-secondary);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(249, 215, 28, 0.15) 0%, rgba(255, 255, 255, 0.9) 50%, rgba(249, 215, 28, 0.1) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(249, 215, 28, 0.3);
   border-radius: var(--radius-lg);
   margin-bottom: var(--spacing-xl);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  color: var(--text-primary);
+  box-shadow: 0 4px 20px rgba(249, 215, 28, 0.15), 0 2px 8px rgba(0, 0, 0, 0.04);
+  color: #1f2937;
+  font-weight: var(--font-weight-medium);
 }
 
 .connected-text {
-  color: var(--secondary-color);
-  font-weight: var(--font-weight-semibold);
+  color: #D4AF00;
+  font-weight: var(--font-weight-bold);
+  text-shadow: 0 1px 2px rgba(212, 175, 0, 0.3);
 }
 
 .disconnect-btn {

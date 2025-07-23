@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { formatFileSize, showToast } from '@/utils/helpers';
+import { formatFileSize } from '@/utils/helpers';
 
 interface FileItem {
   file: File;
@@ -44,7 +44,9 @@ export default function TransferPage({
   const [textInput, setTextInput] = useState('');
   const [transferProgress, setTransferProgress] = useState<number>(0);
   const [isTransferring, setIsTransferring] = useState<boolean>(false);
+  const [sentMessages, setSentMessages] = useState<{id: string; content: string; timestamp: string; type: 'sent' | 'received'; isFile?: boolean; fileData?: any}[]>([]);
   const [messages, setMessages] = useState<{id: string; content: string; timestamp: string; type: 'sent' | 'received'; isFile?: boolean; fileData?: any}[]>([]);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   
@@ -55,6 +57,7 @@ export default function TransferPage({
       id: text.id,
       content: text.content,
       timestamp: text.timestamp,
+      timestampMs: parseInt(text.id), // Use ID as timestamp for sorting
       type: 'received' as const,
       isFile: false
     }));
@@ -64,18 +67,25 @@ export default function TransferPage({
       id: file.id,
       content: file.name,
       timestamp: new Date(parseInt(file.id)).toLocaleString(),
+      timestampMs: parseInt(file.id), // Use ID as timestamp for sorting
       type: 'received' as const,
       isFile: true,
       fileData: file
     }));
     
+    // Add timestampMs to sent messages for consistent sorting
+    const sentMessagesWithMs = sentMessages.map(msg => ({
+      ...msg,
+      timestampMs: parseInt(msg.id) // Use ID as timestamp for sorting
+    }));
+    
     // Merge all messages and sort by time
-    const allMessages = [...textMessages, ...fileMessages].sort((a, b) => {
-      return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    const allMessages = [...sentMessagesWithMs, ...textMessages, ...fileMessages].sort((a, b) => {
+      return a.timestampMs - b.timestampMs;
     });
     
     setMessages(allMessages);
-  }, [receivedTexts, receivedFiles]);
+  }, [receivedTexts, receivedFiles, sentMessages]);
   
   // Auto-scroll to the latest message
   useEffect(() => {
@@ -137,19 +147,16 @@ export default function TransferPage({
               url: URL.createObjectURL(file)
             }
           };
-          setMessages(prev => [...prev, newMessage]);
+          setSentMessages(prev => [...prev, newMessage]);
           
           completedFiles++;
           setTransferProgress((completedFiles / totalFiles) * 100);
-          showToast(`Sending: ${file.name}`);
         } else {
-          showToast('Send failed, please check connection', true);
           setIsTransferring(false);
           return;
         }
       } catch (error) {
         console.error('Failed to read file:', error);
-        showToast('File transfer failed', true);
         setIsTransferring(false);
         return;
       }
@@ -159,7 +166,6 @@ export default function TransferPage({
     setSelectedFiles([]);
     setTransferProgress(0);
     setIsTransferring(false);
-    showToast('File transfer completed');
   };
   
   // Send text
@@ -183,13 +189,10 @@ export default function TransferPage({
         type: 'sent' as const,
         isFile: false
       };
-      setMessages(prev => [...prev, newMessage]);
+      setSentMessages(prev => [...prev, newMessage]);
       
       // Clear input
       setTextInput('');
-      showToast('Message sent');
-    } else {
-      showToast('Send failed, please check connection', true);
     }
   };
   
@@ -199,7 +202,6 @@ export default function TransferPage({
       // Check if Clipboard API is available
       if (!navigator.clipboard) {
         console.error('Browser does not support Clipboard API');
-        showToast('Your browser does not support copying, please download the image manually', true);
         return;
       }
 
@@ -218,7 +220,6 @@ export default function TransferPage({
             [blob.type]: blob
           })
         ]);
-        showToast(`Copied image ${fileName}`);
       } catch (err) {
         console.error('Copy to clipboard failed:', err);
         
@@ -227,24 +228,25 @@ export default function TransferPage({
         tempLink.href = url;
         tempLink.target = '_blank';
         tempLink.click();
-        
-        showToast('Cannot copy directly, opened in new window for manual copy', true);
       }
     } catch (e) {
       console.error('Could not get image data:', e);
-      showToast('Copy failed, please download the image manually', true);
     }
   };
 
   // Copy text to clipboard
-  const copyTextToClipboard = (text: string) => {
+  const copyTextToClipboard = (text: string, messageId: string) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        showToast('Text copied to clipboard');
+        // Text copied successfully
+        setCopiedMessageId(messageId);
+        // Reset the copied state after 2 seconds
+        setTimeout(() => {
+          setCopiedMessageId(null);
+        }, 2000);
       })
       .catch(err => {
         console.error('Failed to copy text:', err);
-        showToast('Copy failed, please select and copy manually', true);
       });
   };
   
@@ -322,11 +324,11 @@ export default function TransferPage({
                     <div className="text-message">
                       {message.content}
                       <button 
-                        className="btn-small copy-text"
-                        onClick={() => copyTextToClipboard(message.content)}
+                        className={`btn-small copy-text ${copiedMessageId === message.id ? 'copied' : ''}`}
+                        onClick={() => copyTextToClipboard(message.content, message.id)}
                         title="Copy text"
                       >
-                        Copy
+                        {copiedMessageId === message.id ? 'Copied!' : 'Copy'}
                       </button>
                     </div>
                   )}
@@ -622,6 +624,30 @@ export default function TransferPage({
           background: rgba(249, 215, 28, 0.2);
           transform: scale(1.05);
           color: #E6C200;
+        }
+        
+        /* Sent message text copy button - white style */
+        .message-sent .text-message .btn-small {
+          background: rgba(255, 255, 255, 0.3);
+          color: #1f2937;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .message-sent .text-message .btn-small:hover {
+          background: rgba(255, 255, 255, 0.5);
+          color: #1f2937;
+          border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .message-sent .text-message .btn-small.copied {
+          background: rgba(52, 199, 89, 0.8);
+          color: #FFFFFF;
+          border-color: rgba(52, 199, 89, 0.9);
+        }
+        
+        .message-sent .text-message .btn-small.copied:hover {
+          background: rgba(52, 199, 89, 0.9);
+          color: #FFFFFF;
         }
         
         .file-message {

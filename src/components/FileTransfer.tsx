@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import ConnectionPanel from './ConnectionPanel';
 import TransferPage from './TransferPage';
 import usePeerConnection from '@/hooks/usePeerConnection';
-import { formatFileSize, showToast } from '@/utils/helpers';
+import { formatFileSize } from '@/utils/helpers';
 
 interface FileItem {
   file: File;
@@ -46,7 +46,6 @@ export default function FileTransfer() {
       };
       
       setReceivedFiles(prev => [...prev, newFile]);
-      showToast(`Received file: ${data.name}`);
     } else if (data.type === 'text') {
       // Add received text message
       const newText = {
@@ -56,7 +55,6 @@ export default function FileTransfer() {
       };
       
       setReceivedTexts(prev => [...prev, newText]);
-      showToast('Received new message');
     }
   }
 

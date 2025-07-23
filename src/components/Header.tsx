@@ -8,12 +8,10 @@ export default function Header() {
     <header className="site-header">
       <div className="header-container">
         <div className="logo">
-          <Link href="/">
             <div className="logo-content">
               <Image src="/logo.svg" alt="TransferFiles" width={40} height={40} />
               <span className="logo-text">TransferFiles</span>
             </div>
-          </Link>
         </div>
       </div>
     </header>
