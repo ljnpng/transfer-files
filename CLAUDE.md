@@ -49,9 +49,9 @@ TransferFiles is a Next.js 14 web application for secure peer-to-peer file trans
 - Memory management with URL cleanup on component unmount
 
 ### External Dependencies
-- PeerJS library loaded via CDN in layout.tsx:48
-- QRCode library loaded via CDN in layout.tsx:49
-- Google Analytics integration (optional via NEXT_PUBLIC_GA_ID)
+- PeerJS library loaded via CDN in layout.tsx:77
+- QRCode library loaded via CDN in layout.tsx:81
+- Vercel Analytics integration for usage tracking
 
 ### File Structure
 - `/src/app/` - Next.js App Router pages and layouts
@@ -68,7 +68,7 @@ TransferFiles is a Next.js 14 web application for secure peer-to-peer file trans
 - Standard Next.js configuration with React strict mode
 
 ### Environment Variables
-- `NEXT_PUBLIC_GA_ID` - Google Analytics tracking ID (optional)
+- No environment variables required for Vercel Analytics (auto-configured in Vercel deployment)
 
 ## Development Notes
 
@@ -100,8 +100,7 @@ TransferFiles is a Next.js 14 web application for secure peer-to-peer file trans
 ### Required GitHub Secrets
 - `VERCEL_TOKEN` - Vercel API token for deployment
 - `VERCEL_ORG_ID` - Vercel organization ID
-- `VERCEL_PROJECT_ID` - Vercel project ID  
-- `NEXT_PUBLIC_GA_ID` - Google Analytics ID (optional)
+- `VERCEL_PROJECT_ID` - Vercel project ID
 
 ### Deployment Setup
 1. Run `./scripts/deploy.sh` for guided setup
