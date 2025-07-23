@@ -12,6 +12,7 @@ interface ConnectionPanelProps {
 export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect }: ConnectionPanelProps) {
   const [peerIdInput, setPeerIdInput] = useState('');
   const [copyBtnText, setCopyBtnText] = useState('Copy');
+  const [copyLinkBtnText, setCopyLinkBtnText] = useState('Copy Link');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
 
   // Generate QR code
@@ -35,6 +36,17 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
       navigator.clipboard.writeText(myPeerId).then(() => {
         setCopyBtnText('Copied!');
         setTimeout(() => setCopyBtnText('Copy'), 2000);
+      });
+    }
+  };
+
+  // Copy connection link to clipboard
+  const copyLinkToClipboard = () => {
+    if (myPeerId) {
+      const scanUrl = `${window.location.origin}/scan?connect=${myPeerId}`;
+      navigator.clipboard.writeText(scanUrl).then(() => {
+        setCopyLinkBtnText('Copied!');
+        setTimeout(() => setCopyLinkBtnText('Copy Link'), 2000);
       });
     }
   };
@@ -96,6 +108,27 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
         </div>
         <div className="share-url">
           Use mobile device to scan and connect
+        </div>
+      </div>
+
+      <div className="connection-link-section">
+        <div className="section-label">Or Share Connection Link</div>
+        <div className="connection-link-container">
+          <div className="connection-link-value">
+            <span className="link-text">
+              {myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : "Generating..."}
+            </span>
+            <button 
+              className="btn-small" 
+              onClick={copyLinkToClipboard}
+              disabled={!myPeerId}
+            >
+              {copyLinkBtnText}
+            </button>
+          </div>
+        </div>
+        <div className="share-url">
+          Send this link to connect from any device
         </div>
       </div>
       

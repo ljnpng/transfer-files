@@ -564,6 +564,42 @@ textarea::placeholder {
   text-align: center;
 }
 
+/* Connection Link Section */
+.connection-link-section {
+  text-align: center;
+  margin-top: 32px;
+}
+
+.connection-link-container {
+  margin: 16px 0;
+}
+
+.connection-link-value {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 16px 20px;
+  transition: all 0.3s ease;
+  gap: 12px;
+}
+
+.connection-link-value:hover {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.link-text {
+  flex: 1;
+  color: #374151;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 14px;
+  word-break: break-all;
+  text-align: left;
+  line-height: 1.4;
+}
+
 .qr-container {
   display: inline-block;
   padding: 20px;
