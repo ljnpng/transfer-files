@@ -2,19 +2,22 @@
 
 <div align="center">
   <h3>Fast, secure, and direct file transfers between any devices - no installation required.</h3>
-  
-  ![License](https://img.shields.io/github/license/yourusername/transferfiles)
+
+  ![License](https://img.shields.io/github/license/ljnpng/transfer-files)
   ![Next.js](https://img.shields.io/badge/Next.js-14.2.4-blue)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
   ![WebRTC](https://img.shields.io/badge/WebRTC-Powered-green)
+  ![PeerJS](https://img.shields.io/badge/PeerJS-1.4.7-orange)
+  ![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)
 </div>
 
 ## Overview
 
 TransferFiles is an open-source web application that enables secure file transfers between any devices, without requiring installation, shared networks, or user accounts. Built with modern web technologies, it creates direct peer-to-peer connections for fast, private file sharing.
 
-**Demo**: [https://transferfiles.pro](https://transferfiles.pro)
+**Demo**: [https://file.lyou.dev](https://file.lyou.dev)
 
-![TransferFiles Demo](public/images/demo.png)
+![TransferFiles Demo](public/images/demo.jpeg)
 
 ## Key Features
 
@@ -50,8 +53,8 @@ The technology behind TransferFiles enables connections across different network
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/CoderLim/transferfiles.git
-   cd transferfiles
+   git clone https://github.com/ljnpng/transfer-files.git
+   cd transfer-files
    ```
 
 2. Install dependencies:
@@ -88,7 +91,7 @@ yarn build
 
 ### Quick Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/CoderLim/transferfiles)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ljnpng/transfer-files)
 
 ### Automated Deployment Setup
 
@@ -109,11 +112,11 @@ For automated deployment with GitHub Actions:
    ```bash
    # Install Vercel CLI
    npm install -g vercel
-   
+
    # Login and link project
    vercel login
    vercel link
-   
+
    # Deploy
    vercel --prod
    ```
@@ -125,7 +128,7 @@ For automated deployment with GitHub Actions:
 ### GitHub Actions
 
 The project includes automated deployment via GitHub Actions:
-- **Preview deployments** for pull requests  
+- **Preview deployments** for pull requests
 - **Production deployments** for main branch
 - Automatic builds and deployment to Vercel
 
@@ -171,20 +174,16 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support the Project
-
-If you find TransferFiles useful, please consider supporting the project:
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/CoderLim)
 
 ## Acknowledgments
 
 - [PeerJS](https://peerjs.com/) for WebRTC implementation
 - [Next.js](https://nextjs.org/) for the React framework
 - The WebRTC community for making peer-to-peer web communication possible
+- Original inspiration from the file transfer project by [CoderLim](https://github.com/CoderLim) - thank you for the foundation that made this project possible
 
 ---
 
 <p align="center">
   Made with ❤️ for a more open and private web
-</p> 
+</p>
