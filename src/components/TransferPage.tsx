@@ -300,6 +300,7 @@ export default function TransferPage({
                       
                       {message.fileData.type.startsWith('image/') && (
                         <div className="image-preview" onClick={() => handleImageClick(message.fileData.url)}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img 
                             src={message.fileData.url} 
                             alt={message.content} 

@@ -287,8 +287,6 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
         console.log('Connection request received:', conn.peer);
         if (setupConnectionRef.current) {
           setupConnectionRef.current(conn);
-        } else {
-          setupConnection(conn);
         }
         setConnectionStatus(`Connected to ${conn.peer}`);
       });
