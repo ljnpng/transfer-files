@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { generatePeerId } from '../utils/generatePeerId';
 
 interface PeerConnectionOptions {
   onConnection?: (connection: any) => void;
@@ -135,8 +136,9 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
             return;
           }
           
-          // 不指定ID，让服务器生成一个随机ID，但传递一个空字符串作为第一个参数以符合类型定义
-          const newPeer = new Peer('', {
+          // 使用自定义的 8 位随机 ID
+          const customId = generatePeerId();
+          const newPeer = new Peer(customId, {
             config: {
               iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -256,9 +258,9 @@ export default function usePeerConnection(options: PeerConnectionOptions = {}) {
     try {
       const Peer = window.Peer;
       
-      // 使用原始方式初始化 Peer，不指定 ID 让服务器自动生成
-      // 传递一个空字符串作为第一个参数以符合类型定义
-      const peer = new Peer('', {
+      // 使用自定义的 8 位随机 ID
+      const customId = generatePeerId();
+      const peer = new Peer(customId, {
         config: {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },

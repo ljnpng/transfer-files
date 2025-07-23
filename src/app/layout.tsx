@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,6 +11,8 @@ export const metadata: Metadata = {
   description: "Transfer files between any devices without installation. Secure, encrypted P2P sharing works across networks - Android, iPhone, PC, Mac all supported.",
   icons: {
     icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
   },
   openGraph: {
     title: "TransferFiles - Fast & Secure Cross-Device File Transfer",
@@ -50,9 +51,9 @@ export default function RootLayout({
         <script defer data-domain="transferfiles.pro" src="https://app.pageview.app/js/script.js"></script>
       </head>
       <body className={inter.className}>
+        <div className="bg-decoration"></div>
         <Header />
         {children}
-        <Footer />
         
         {/* Google Analytics */}
         <Script 

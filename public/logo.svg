@@ -1,21 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <!-- 背景圆形 -->
-  <circle cx="100" cy="100" r="90" fill="#3498db" opacity="0.9"/>
-  
-  <!-- 左侧设备图标 -->
-  <rect x="30" y="65" width="40" height="70" rx="4" fill="white" />
-  <rect x="35" y="70" width="30" height="50" rx="2" fill="#3498db" opacity="0.7" />
-  <circle cx="50" cy="130" r="3" fill="white" />
-  
-  <!-- 右侧设备图标 -->
-  <rect x="130" y="65" width="40" height="70" rx="4" fill="white" />
-  <rect x="135" y="70" width="30" height="50" rx="2" fill="#3498db" opacity="0.7" />
-  <circle cx="150" cy="130" r="3" fill="white" />
-  
-  <!-- 传输箭头 -->
-  <path d="M80 90 L120 90 L110 80 M120 90 L110 100" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M120 110 L80 110 L90 100 M80 110 L90 120" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  
-  <!-- 圆形边框 -->
-  <circle cx="100" cy="100" r="90" fill="none" stroke="white" stroke-width="4" />
-</svg> 
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48">
+  <defs>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.3"/>
+    </filter>
+  </defs>
+  <path d="M19 13C19.34 13 19.67 13.04 20 13.09V8L14 2H6C4.89 2 4 2.89 4 4V20C4 21.11 4.89 22 6 22H13.81C13.3 21.12 13 20.1 13 19C13 15.69 15.69 13 19 13M13 3.5L18.5 9H13V3.5M23.5 20L21 23L18.5 20H20V16H22V20H23.5M19.5 18H18V22H16V18H14.5L17 15L19.5 18Z" 
+        fill="#F9D71C" 
+        stroke="#E6C200" 
+        stroke-width="0.8"
+        filter="url(#blur)"/>
+</svg>

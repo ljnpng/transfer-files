@@ -22,7 +22,7 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
         width: 180,
         margin: 2,
         color: {
-          dark: '#3498db',
+          dark: '#F9D71C',
           light: '#ffffff'
         }
       });
@@ -53,10 +53,13 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
 
   return (
     <div className="connection-panel">
-      <h2>Connection Setup</h2>
+      <div className="connection-header">
+        <h2>Connection Setup</h2>
+        <p>Fast & secure file transfer</p>
+      </div>
       
       <div className="my-id-container">
-        <div className="my-id-label">My ID: </div>
+        <div className="section-label">My ID</div>
         <div className="my-id-value">
           <span>{myPeerId || "Generating..."}</span>
           <button 
@@ -69,27 +72,30 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
       </div>
       
       <div className="connect-section">
+        <div className="section-label">Connect to peer</div>
         <input 
           type="text" 
-          placeholder="Enter peer ID" 
+          placeholder="Enter 8-digit ID (e.g. e24e3703)" 
           value={peerIdInput}
           onChange={(e) => setPeerIdInput(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button className="btn" onClick={handleConnect}>Connect</button>
+        <button className="btn" onClick={handleConnect}>
+          <span>Connect</span>
+        </button>
       </div>
       
-      <div className="or-divider">
+      <div className="divider">
         <span>OR</span>
       </div>
       
       <div id="qr-container">
-        <h3>Scan QR Code to Connect</h3>
-        <canvas id="qrcode" ref={qrcodeRef}></canvas>
+        <div className="section-label">Scan QR Code to Connect</div>
+        <div className="qr-container">
+          <canvas id="qrcode" ref={qrcodeRef}></canvas>
+        </div>
         <div className="share-url">
-          Or share link: <a href={`/scan?connect=${myPeerId}`} target="_blank">
-            {myPeerId ? `${window.location.origin}/scan?connect=${myPeerId}` : 'Generating...'}
-          </a>
+          Use mobile device to scan and connect
         </div>
       </div>
       

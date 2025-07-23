@@ -61,7 +61,7 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
         width: 180,
         margin: 1,
         color: {
-          dark: '#3498db',
+          dark: '#F9D71C',
           light: '#ffffff'
         }
       }, function (error: Error | null) {
@@ -122,7 +122,7 @@ export default function ConnectionPage({ myPeerId, connectionStatus, onConnect }
               <input 
                 type="text" 
                 id="peer-id" 
-                placeholder="Enter remote ID" 
+                placeholder="Enter 8-digit ID (e.g. e24e3703)" 
                 value={peerIdInput}
                 onChange={(e) => setPeerIdInput(e.target.value)}
                 onKeyDown={handleKeyDown}

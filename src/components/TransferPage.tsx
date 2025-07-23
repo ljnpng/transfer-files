@@ -279,7 +279,8 @@ export default function TransferPage({
           {messages.length > 0 ? (
             messages.map((message) => (
               <div key={message.id} className={`message ${message.type === 'sent' ? 'message-sent' : 'message-received'}`}>
-                <div className="message-content">
+                <div className="message-content-wrapper">
+                  <div className="message-content">
                   {message.isFile ? (
                     <div className="file-message">
                       <div className="file-info">
@@ -329,9 +330,10 @@ export default function TransferPage({
                       </button>
                     </div>
                   )}
-                </div>
-                <div className="message-time">
-                  {message.timestamp}
+                                  </div>
+                  <div className="message-time">
+                    {message.timestamp}
+                  </div>
                 </div>
               </div>
             ))
@@ -387,132 +389,305 @@ export default function TransferPage({
           display: flex;
           flex-direction: column;
           height: calc(100vh - 180px);
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          background-color: #f9f9f9;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(0, 0, 0, 0.04);
+          border-radius: 16px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
           overflow: hidden;
+          transition: all var(--transition-medium);
         }
         
         .messages-container {
           flex: 1;
           overflow-y: auto;
-          padding: 15px;
-          background-color: #f5f7f9;
+          padding: var(--spacing-lg);
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          display: flex;
+          flex-direction: column;
         }
         
         .message {
-          margin-bottom: 15px;
-          max-width: 70%;
+          margin-bottom: var(--spacing-lg);
+          max-width: 80%;
           clear: both;
+          display: flex;
+          flex-direction: column;
         }
         
         .message-sent {
-          float: right;
+          align-self: flex-end;
+          align-items: flex-end;
         }
         
         .message-received {
-          float: left;
+          align-self: flex-start;
+          align-items: flex-start;
         }
         
         .message-content {
-          padding: 10px 15px;
+          padding: 12px 16px;
           border-radius: 18px;
           word-wrap: break-word;
+          word-break: break-word;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: none;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+          transition: all var(--transition-medium);
+          font-size: 15px;
+          line-height: 1.4;
+          display: inline-block;
+          max-width: 100%;
+          min-width: 60px;
+          width: fit-content;
+          white-space: pre-wrap;
         }
         
         .message-sent .message-content {
-          background-color: #dcf8c6;
-          border-top-right-radius: 5px;
+          background: #F9D71C;
+          color: #1f2937;
+          border-top-right-radius: 6px;
+          box-shadow: 0 2px 8px rgba(249, 215, 28, 0.25);
         }
         
         .message-received .message-content {
-          background-color: #fff;
-          border-top-left-radius: 5px;
-          box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+          background: rgba(255, 255, 255, 0.95);
+          color: #1d1d1f;
+          border-top-left-radius: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+          border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .message-time {
           font-size: 12px;
-          color: #999;
-          margin: 5px 10px;
-          text-align: right;
+          color: rgba(60, 60, 67, 0.6);
+          margin: 4px 8px 0;
+          opacity: 0.8;
+          align-self: flex-end;
+        }
+        
+        .message-received .message-time {
+          align-self: flex-start;
+        }
+        
+        .message-content-wrapper {
+          display: flex;
+          flex-direction: column;
+          width: fit-content;
+          max-width: 100%;
         }
         
         .message-input-container {
           display: flex;
-          padding: 10px;
-          background-color: #f0f0f0;
-          border-top: 1px solid #ddd;
+          padding: 16px 20px;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
           align-items: center;
+          gap: 12px;
         }
         
         .message-tools {
-          margin-right: 10px;
+          display: flex;
+          align-items: center;
         }
         
         .file-btn {
-          display: inline-block;
-          font-size: 20px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          font-size: 18px;
           cursor: pointer;
-          padding: 5px;
+          background: rgba(249, 215, 28, 0.1);
+          border: none;
+          border-radius: 20px;
+          transition: all var(--transition-medium);
+          color: #F9D71C;
+          box-sizing: border-box;
+          flex-shrink: 0;
+        }
+        
+        .file-btn:hover {
+          background: rgba(249, 215, 28, 0.2);
+          transform: scale(1.05);
         }
         
         .message-input {
           flex: 1;
-          border: 1px solid #ddd;
+          background: rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(0, 0, 0, 0.08);
           border-radius: 20px;
-          padding: 10px 15px;
+          padding: 8px 16px;
           resize: none;
-          min-height: 40px;
+          height: 40px;
           max-height: 120px;
-          font-family: inherit;
-          font-size: 14px;
+          font-family: var(--font-family);
+          font-size: 15px;
+          color: #1d1d1f;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          transition: all var(--transition-medium);
+          line-height: 1.4;
+          box-sizing: border-box;
+          vertical-align: middle;
+          display: flex;
+          align-items: center;
+          margin: 0;
+        }
+        
+        .message-input:focus {
+          outline: none;
+          border-color: #F9D71C;
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 0 0 2px rgba(249, 215, 28, 0.2);
+        }
+        
+        .message-input::placeholder {
+          color: rgba(60, 60, 67, 0.6);
+          font-size: 15px;
         }
         
         .send-btn {
-          margin-left: 10px;
-          padding: 8px 15px;
-          background-color: #0066cc;
-          color: white;
+          padding: 0 20px;
+          background: #F9D71C;
+          color: #1f2937;
           border: none;
           border-radius: 20px;
           cursor: pointer;
-          font-weight: 500;
+          font-weight: 600;
+          font-size: 15px;
+          transition: all var(--transition-medium);
+          height: 40px;
+          min-width: 70px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
+          flex-shrink: 0;
+          box-shadow: 0 1px 3px rgba(249, 215, 28, 0.3);
+        }
+        
+        .send-btn:hover:not(:disabled) {
+          background: #E6C200;
+          transform: scale(1.02);
+        }
+        
+        .send-btn:active:not(:disabled) {
+          transform: scale(0.98);
         }
         
         .send-btn:disabled {
-          background-color: #cccccc;
+          background: rgba(0, 0, 0, 0.15);
+          color: rgba(0, 0, 0, 0.3);
           cursor: not-allowed;
+          box-shadow: none;
+          transform: none;
         }
         
         .text-message {
           position: relative;
           white-space: pre-wrap;
+          line-height: 1.4;
+          overflow-wrap: break-word;
+          word-break: break-word;
         }
         
         .text-message .btn-small {
           display: none;
           position: absolute;
-          right: 5px;
-          bottom: 5px;
-          font-size: 12px;
-          padding: 2px 5px;
+          right: var(--spacing-xs);
+          bottom: var(--spacing-xs);
+          font-size: 11px;
+          padding: var(--spacing-xs) var(--spacing-sm);
+          background: rgba(249, 215, 28, 0.1);
+          border: 1px solid rgba(249, 215, 28, 0.3);
+          border-radius: var(--radius-sm);
+          backdrop-filter: blur(10px);
+          transition: all var(--transition-medium);
+          color: #F9D71C;
         }
         
         .text-message:hover .btn-small {
           display: block;
         }
         
-        .file-message {
-          background-color: rgba(255, 255, 255, 0.8);
-          border-radius: 8px;
-          padding: 8px;
+        .btn-small:hover {
+          background: rgba(249, 215, 28, 0.2);
+          transform: scale(1.05);
+          color: #E6C200;
         }
         
-        .file-direction {
+        .file-message {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: var(--radius-md);
+          padding: var(--spacing-md);
+          backdrop-filter: blur(5px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          width: fit-content;
+          min-width: 200px;
+          max-width: 100%;
+        }
+        
+        .file-info {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-sm);
+        }
+        
+        .file-icon {
+          font-size: 1.2rem;
+        }
+        
+        .file-name {
+          font-weight: var(--font-weight-medium);
+          flex: 1;
+        }
+        
+        .file-size {
           font-size: 12px;
-          color: #888;
-          margin-left: 10px;
+          opacity: 0.8;
+        }
+        
+        .file-actions {
+          display: flex;
+          gap: var(--spacing-sm);
+          margin-top: var(--spacing-sm);
+        }
+        
+        .file-actions .btn-small {
+          display: block;
+          background: rgba(249, 215, 28, 0.1);
+          color: #F9D71C;
+          border: 1px solid rgba(249, 215, 28, 0.3);
+          text-decoration: none;
+          font-size: 12px;
+        }
+        
+        .message-sent .file-actions .btn-small {
+          background: rgba(255, 255, 255, 0.3);
+          color: #1f2937;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .image-preview {
+          margin: var(--spacing-sm) 0;
+          border-radius: var(--radius-md);
+          overflow: hidden;
+          cursor: pointer;
+          transition: all var(--transition-medium);
+        }
+        
+        .image-preview:hover {
+          transform: scale(1.02);
+          box-shadow: var(--glass-shadow);
         }
         
         .empty-state {
@@ -520,40 +695,111 @@ export default function TransferPage({
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          color: #999;
-          padding: 50px 20px;
+          color: rgba(60, 60, 67, 0.6);
+          padding: 60px 24px;
+          text-align: center;
         }
         
         .empty-state .icon {
-          font-size: 40px;
-          margin-bottom: 10px;
+          font-size: 3rem;
+          margin-bottom: 16px;
+          opacity: 0.3;
+          color: rgba(60, 60, 67, 0.3);
+        }
+        
+        .empty-state p {
+          font-size: 17px;
+          font-weight: 400;
+          color: rgba(60, 60, 67, 0.6);
         }
         
         .transfer-progress-container {
-          padding: 10px;
-          background-color: #f9f9f9;
-          border-top: 1px solid #eee;
+          padding: var(--spacing-lg);
+          background: var(--bg-glass-strong);
+          border-top: 1px solid var(--glass-border);
+          backdrop-filter: var(--glass-blur);
+          -webkit-backdrop-filter: var(--glass-blur);
         }
         
         .transfer-progress {
           height: 6px;
-          background-color: #eee;
-          border-radius: 3px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: var(--radius-sm);
           overflow: hidden;
-          margin-bottom: 5px;
+          margin-bottom: var(--spacing-sm);
+          border: 1px solid var(--glass-border);
         }
         
         .progress-bar {
           height: 100%;
-          background-color: #0066cc;
-          transition: width 0.3s ease;
+          background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+          transition: width var(--transition-medium);
+          box-shadow: 0 0 10px rgba(249, 215, 28, 0.3);
         }
         
         .transfer-status {
           font-size: 12px;
-          color: #666;
+          color: var(--text-secondary);
           text-align: center;
+          font-weight: var(--font-weight-medium);
         }
+        
+        /* Custom scrollbar for messages */
+        .messages-container::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .messages-container::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: var(--radius-sm);
+        }
+        
+        .messages-container::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.4);
+        }
+        
+                 /* Responsive adjustments */
+         @media (max-width: 768px) {
+           .message {
+             max-width: 90%;
+           }
+           
+           .message-content {
+             min-width: 40px;
+           }
+           
+           .message-input-container {
+             padding: 16px;
+             gap: 10px;
+           }
+           
+           .file-btn {
+             width: 36px;
+             height: 36px;
+             font-size: 16px;
+           }
+           
+           .message-input {
+             height: 36px;
+             padding: 6px 14px;
+             font-size: 16px;
+           }
+           
+           .message-input::placeholder {
+             font-size: 16px;
+           }
+           
+           .send-btn {
+             padding: 0 16px;
+             height: 36px;
+             font-size: 15px;
+             min-width: 60px;
+           }
+         }
       `}</style>
     </>
   );
