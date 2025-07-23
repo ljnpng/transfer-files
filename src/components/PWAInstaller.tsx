@@ -11,8 +11,16 @@ declare global {
 export default function PWAInstaller() {
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Detect if device is mobile
+    const checkMobile = () => {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+             (window.innerWidth <= 768 && 'ontouchstart' in window);
+    };
+    setIsMobile(checkMobile());
+
     // Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
@@ -69,8 +77,8 @@ export default function PWAInstaller() {
     setIsInstallable(false);
   };
 
-  // Don't show install button if already installed or not installable
-  if (isInstalled || !isInstallable) {
+  // Don't show install button if already installed, not installable, or not on mobile
+  if (isInstalled || !isInstallable || !isMobile) {
     return null;
   }
 
