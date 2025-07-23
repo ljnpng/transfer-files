@@ -1,18 +1,38 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/Header";
+import PWAInstaller from "@/components/PWAInstaller";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#F9D71C'
+};
 
 export const metadata: Metadata = {
   title: "TransferFiles - Fast & Secure Cross-Device File Transfer",
   description: "Transfer files between any devices without installation. Secure, encrypted P2P sharing works across networks - Android, iPhone, PC, Mac all supported.",
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
     apple: '/favicon.svg',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'TransferFiles'
+  },
+  applicationName: 'TransferFiles',
+  formatDetection: {
+    telephone: false,
   },
   openGraph: {
     title: "TransferFiles - Fast & Secure Cross-Device File Transfer",
@@ -46,6 +66,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="TransferFiles" />
+        <meta name="msapplication-TileColor" content="#121214" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        
         <Script 
           src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"
           strategy="beforeInteractive"
@@ -62,6 +89,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <div className="bg-decoration"></div>
+        <PWAInstaller />
         <Header />
         {children}
         
