@@ -15,6 +15,26 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
   const [copyLinkBtnText, setCopyLinkBtnText] = useState('Copy Link');
   const qrcodeRef = useRef<HTMLCanvasElement>(null);
 
+  // Fallback function for copying text when clipboard API is not available
+  const fallbackCopyTextToClipboard = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+    } catch (err) {
+      console.warn('Fallback: Unable to copy text to clipboard');
+    }
+    
+    document.body.removeChild(textArea);
+  };
+
   // Generate QR code
   useEffect(() => {
     if (myPeerId && qrcodeRef.current) {
@@ -31,23 +51,52 @@ export default function ConnectionPanel({ myPeerId, connectionStatus, onConnect 
   }, [myPeerId]);
 
   // Copy ID to clipboard
-  const copyIdToClipboard = () => {
-    if (myPeerId) {
-      navigator.clipboard.writeText(myPeerId).then(() => {
+  const copyIdToClipboard = async () => {
+    if (!myPeerId) return;
+    
+    try {
+      // Modern clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(myPeerId);
         setCopyBtnText('Copied!');
         setTimeout(() => setCopyBtnText('Copy'), 2000);
-      });
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        fallbackCopyTextToClipboard(myPeerId);
+        setCopyBtnText('Copied!');
+        setTimeout(() => setCopyBtnText('Copy'), 2000);
+      }
+    } catch (err) {
+      // Fallback if clipboard API fails
+      fallbackCopyTextToClipboard(myPeerId);
+      setCopyBtnText('Copied!');
+      setTimeout(() => setCopyBtnText('Copy'), 2000);
     }
   };
 
   // Copy connection link to clipboard
-  const copyLinkToClipboard = () => {
-    if (myPeerId) {
-      const scanUrl = `${window.location.origin}/scan?connect=${myPeerId}`;
-      navigator.clipboard.writeText(scanUrl).then(() => {
+  const copyLinkToClipboard = async () => {
+    if (!myPeerId) return;
+    
+    const scanUrl = `${window.location.origin}/scan?connect=${myPeerId}`;
+    
+    try {
+      // Modern clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(scanUrl);
         setCopyLinkBtnText('Copied!');
         setTimeout(() => setCopyLinkBtnText('Copy Link'), 2000);
-      });
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        fallbackCopyTextToClipboard(scanUrl);
+        setCopyLinkBtnText('Copied!');
+        setTimeout(() => setCopyLinkBtnText('Copy Link'), 2000);
+      }
+    } catch (err) {
+      // Fallback if clipboard API fails
+      fallbackCopyTextToClipboard(scanUrl);
+      setCopyLinkBtnText('Copied!');
+      setTimeout(() => setCopyLinkBtnText('Copy Link'), 2000);
     }
   };
 

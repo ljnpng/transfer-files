@@ -234,20 +234,52 @@ export default function TransferPage({
     }
   };
 
+  // Fallback function for copying text when clipboard API is not available
+  const fallbackCopyTextToClipboard = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+    } catch (err) {
+      console.warn('Fallback: Unable to copy text to clipboard');
+    }
+    
+    document.body.removeChild(textArea);
+  };
+
   // Copy text to clipboard
-  const copyTextToClipboard = (text: string, messageId: string) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        // Text copied successfully
+  const copyTextToClipboard = async (text: string, messageId: string) => {
+    try {
+      // Modern clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
         setCopiedMessageId(messageId);
-        // Reset the copied state after 2 seconds
         setTimeout(() => {
           setCopiedMessageId(null);
         }, 2000);
-      })
-      .catch(err => {
-        console.error('Failed to copy text:', err);
-      });
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        fallbackCopyTextToClipboard(text);
+        setCopiedMessageId(messageId);
+        setTimeout(() => {
+          setCopiedMessageId(null);
+        }, 2000);
+      }
+    } catch (err) {
+      // Fallback if clipboard API fails
+      fallbackCopyTextToClipboard(text);
+      setCopiedMessageId(messageId);
+      setTimeout(() => {
+        setCopiedMessageId(null);
+      }, 2000);
+    }
   };
   
   // Image preview click enlarge
