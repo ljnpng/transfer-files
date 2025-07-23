@@ -84,6 +84,51 @@ npm run build
 yarn build
 ```
 
+## Deployment
+
+### Quick Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/CoderLim/transferfiles)
+
+### Automated Deployment Setup
+
+For automated deployment with GitHub Actions:
+
+1. **Run the deployment script:**
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+2. **The script will:**
+   - Create/link GitHub repository
+   - Set up Vercel project
+   - Configure GitHub Secrets
+   - Enable automatic deployments
+
+3. **Manual setup (alternative):**
+   ```bash
+   # Install Vercel CLI
+   npm install -g vercel
+   
+   # Login and link project
+   vercel login
+   vercel link
+   
+   # Deploy
+   vercel --prod
+   ```
+
+### Environment Variables
+
+- `NEXT_PUBLIC_GA_ID` - Google Analytics tracking ID (optional)
+
+### GitHub Actions
+
+The project includes automated deployment via GitHub Actions:
+- **Preview deployments** for pull requests  
+- **Production deployments** for main branch
+- Automatic builds and deployment to Vercel
+
 ## Technology Stack
 
 - **Frontend Framework**: Next.js 14 (React)

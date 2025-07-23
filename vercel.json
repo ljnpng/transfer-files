@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_APP_NAME": "TransferFiles",
+    "NEXT_PUBLIC_APP_VERSION": "0.1.0"
+  }
+}
