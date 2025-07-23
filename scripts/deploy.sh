@@ -111,6 +111,18 @@ get_vercel_config() {
 setup_github_secrets() {
     echo "🔑 Setting up GitHub Secrets..."
     
+    # Get current repository info
+    local remote_url=$(git remote get-url origin)
+    local repo_owner=$(echo "$remote_url" | sed -n 's#.*[:/]\([^/]*\)/\([^/]*\)\.git#\1#p')
+    local repo_name=$(echo "$remote_url" | sed -n 's#.*[:/]\([^/]*\)/\([^/]*\)\.git#\2#p')
+    
+    if [ -z "$repo_owner" ] || [ -z "$repo_name" ]; then
+        echo "❌ Could not determine repository info"
+        exit 1
+    fi
+    
+    echo "Setting secrets for repository: $repo_owner/$repo_name"
+    
     # Get Vercel Token
     echo "Please get Vercel API Token:"
     echo "1. Visit https://vercel.com/account/tokens"
@@ -126,16 +138,16 @@ setup_github_secrets() {
     echo "Google Analytics ID (optional, press Enter to skip):"
     read -p "Enter Google Analytics ID: " GA_ID
     
-    # Set GitHub Secrets
+    # Set GitHub Secrets with explicit repo
     echo "Setting up GitHub Secrets..."
     
-    gh secret set VERCEL_TOKEN --body "$VERCEL_TOKEN"
-    gh secret set VERCEL_ORG_ID --body "$ORG_ID"
-    gh secret set VERCEL_PROJECT_ID --body "$PROJECT_ID"
+    gh secret set VERCEL_TOKEN --body "$VERCEL_TOKEN" --repo "$repo_owner/$repo_name"
+    gh secret set VERCEL_ORG_ID --body "$ORG_ID" --repo "$repo_owner/$repo_name"
+    gh secret set VERCEL_PROJECT_ID --body "$PROJECT_ID" --repo "$repo_owner/$repo_name"
     
     # Set Google Analytics ID if provided
     if [ ! -z "$GA_ID" ]; then
-        gh secret set NEXT_PUBLIC_GA_ID --body "$GA_ID"
+        gh secret set NEXT_PUBLIC_GA_ID --body "$GA_ID" --repo "$repo_owner/$repo_name"
     fi
     
     echo "✅ GitHub Secrets setup complete"
@@ -161,22 +173,33 @@ deploy_project() {
 show_deployment_status() {
     echo "📊 Deployment status monitoring..."
     
+    # Get current repository info
+    local remote_url=$(git remote get-url origin)
+    local repo_owner=$(echo "$remote_url" | sed -n 's#.*[:/]\([^/]*\)/\([^/]*\)\.git#\1#p')
+    local repo_name=$(echo "$remote_url" | sed -n 's#.*[:/]\([^/]*\)/\([^/]*\)\.git#\2#p')
+    
+    if [ -z "$repo_owner" ] || [ -z "$repo_name" ]; then
+        echo "⚠️  Could not determine repository info from remote URL"
+        echo "Current remote: $(git remote get-url origin)"
+        return
+    fi
+    
     # Wait for GitHub Actions to start
     sleep 5
     
-    # Show latest run status
+    # Show latest run status with explicit repo
     echo "Latest GitHub Actions runs:"
-    gh run list --limit 3
+    gh run list --limit 3 --repo "$repo_owner/$repo_name" || echo "⚠️  Could not fetch GitHub Actions runs"
     
     echo ""
     echo "🔗 Useful links:"
-    echo "- GitHub Actions: $(gh repo view --json url -q .url)/actions"
+    echo "- GitHub Actions: https://github.com/$repo_owner/$repo_name/actions"
     echo "- Vercel Dashboard: https://vercel.com/dashboard"
     echo ""
     echo "📝 Common commands:"
-    echo "- View run status: gh run list"
-    echo "- View run logs: gh run view --log"
-    echo "- Re-run failed job: gh run rerun [run-id]"
+    echo "- View run status: gh run list --repo $repo_owner/$repo_name"
+    echo "- View run logs: gh run view --log --repo $repo_owner/$repo_name"
+    echo "- Re-run failed job: gh run rerun [run-id] --repo $repo_owner/$repo_name"
 }
 
 # Main function
